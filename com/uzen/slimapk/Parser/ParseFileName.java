@@ -6,10 +6,10 @@ import java.io.IOException;
 
 public class ParseFileName implements ParseName {
 	private String name;
-	// default tempale
-	private String pattern;
-	public ParseFileName(String patt) {
-		this.pattern = (patt != null) ? patt : "^(.+?)\\.apk";
+	private String pattern = "^(.+?)\\.apk";
+	
+	public ParseFileName(String patt) {	// default tempale
+		if(patt != null) this.pattern = patt;
 	}
 	public void setName(Path file) {
 		this.name = file.getFileName().toString();

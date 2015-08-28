@@ -3,13 +3,19 @@ package com.uzen.slimapk.Parser;
 import java.nio.file.*;
 
 public class ParseFileXML implements ParseName {
-
-	public void setName(Path file){};
+	
+	private Path root;
+	
+	public void setName(Path dir){
+		this.root = dir;	
+	};
 	
 	public String getName(){
 		return null;
 	};
 
-   public void parseData(){};
+   public void parseData(){
+   
+   };
    
 }

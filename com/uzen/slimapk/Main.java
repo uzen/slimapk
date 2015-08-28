@@ -31,7 +31,7 @@ class Main {
 					case "-a64": case "--arm64":
 						arch = "arm64";
 						break;
-					case "-x": case "--x86":
+					case "-x86": case "--x86":
 						arch = "x86";
 						break;
 					case "-s": case "--save":
@@ -40,7 +40,7 @@ class Main {
 					case "-h": case "--help":
 						usage("Usage: slimapk -i <INPUT_FOLDER/FILE> -o <OUTPUT_FOLDER>\n" + "options:\n" 
 							+ " -a32 (--arm) - ARM architecture\n" + " -a64 (--arm64) - ARM64 architecture\n" 
-							+ " -x (--x86) - X86 architecture\n" 
+							+ " -x86 (--x86) - X86 architecture\n" 
 							+ " -s (--save-directory) keep the structure the f/s\n" 
 							+ " -h (--help) - help\n" 
 							+ " -p (--pattern) [\"template for the file name\"]\n"
@@ -57,9 +57,8 @@ class Main {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			usage("You did not specify all the arguments");
 		}
-
+		if(input == null)	usage("End.");
 		try (SlimApk ApkFolder = new SlimApk(input, output, arch, keepDir, pattern)) {
-			ApkFolder.flashMode = true;
 			ApkFolder.unZipIt();
 		}
 	}
