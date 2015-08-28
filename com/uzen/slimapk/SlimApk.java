@@ -1,4 +1,4 @@
-package com.uzen;
+package com.uzen.slimapk;
 
 import java.io.Closeable;
 import java.nio.file.*;
@@ -6,16 +6,16 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.net.URI;
 import java.io.IOException;
-import com.uzen.Parser.*;
-import com.uzen.Parser.struct.AndroidConstants;
+import com.uzen.slimapk.Parser.*;
+import com.uzen.slimapk.Parser.struct.AndroidConstants;
 
-public class UnzipApk implements Closeable {
+public class SlimApk implements Closeable {
 	private String TYPE;
 	private String pattern;
 	private Path input, output;
 	private static Boolean sKeepDir = false;
 	public static Boolean flashMode = false;
-	public UnzipApk(String input, String output, String arch, Boolean keepDir, String pattern) {
+	public SlimApk(String input, String output, String arch, Boolean keepDir, String pattern) {
 		setWorkingDir(input, output);
 		this.sKeepDir = keepDir;
 		this.pattern = pattern;

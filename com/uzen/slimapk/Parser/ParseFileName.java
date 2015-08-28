@@ -1,7 +1,9 @@
-package com.uzen.Parser;
+package com.uzen.slimapk.Parser;
+
 import java.util.regex.*;
 import java.nio.file.*;
 import java.io.IOException;
+
 public class ParseFileName implements ParseName {
 	private String name;
 	// default tempale
@@ -12,7 +14,7 @@ public class ParseFileName implements ParseName {
 	public void setName(Path file) {
 		this.name = file.getFileName().toString();
 	}
-	public void parseData() { //com.android.chrome.apk -> Chrome
+	public void parseData() { //chrome.apk -> Chrome
 		try {
 			Matcher patt = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE).matcher(name);
 			if (patt.find()) {

@@ -1,4 +1,4 @@
-package com.uzen.Parser;
+package com.uzen.slimapk.Parser;
 
 import java.nio.file.*;
 

@@ -1,10 +1,10 @@
-package com.uzen;
+package com.uzen.slimapk;
 
 import java.io.IOException;
-import com.uzen.SlimApk;
+import com.uzen.slimapk.SlimApk;
 
 class Main {
-	private static final String VERSION = "1.0.1";
+	private static final String VERSION = "1.0.2";
 	private static void usage(String msg) {
 		System.out.println(msg);
 		System.exit(1);
@@ -58,7 +58,7 @@ class Main {
 			usage("You did not specify all the arguments");
 		}
 
-		try (UnzipApk ApkFolder = new UnzipApk(input, output, arch, keepDir, pattern)) {
+		try (SlimApk ApkFolder = new SlimApk(input, output, arch, keepDir, pattern)) {
 			ApkFolder.flashMode = true;
 			ApkFolder.unZipIt();
 		}
