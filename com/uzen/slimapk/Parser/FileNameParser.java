@@ -22,8 +22,9 @@ public class FileNameParser implements NameParser {
 				name = patt.group(1).toLowerCase();
 				name = name.substring(0, 1).toUpperCase() + name.substring(1);
 			}
-		} catch (NullPointerException e) {
-			e.printStackTrace();
+		} catch (PatternSyntaxException e) {
+			System.out.printf("Invalid regular expression: %s\n (https://docs.oracle.com/javase/tutorial/essential/regex/)\n", e.getMessage());
+			System.exit(2);
 		}
 	}
 	public String getName() {

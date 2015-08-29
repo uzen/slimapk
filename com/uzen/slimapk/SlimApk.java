@@ -6,56 +6,71 @@ import java.util.*;
 import java.net.URI;
 import java.io.IOException;
 import com.uzen.slimapk.Parser.*;
-import com.uzen.slimapk.Parser.struct.AndroidConstants;
+import com.uzen.slimapk.struct.AndroidConstants;
 
 public class SlimApk implements Closeable {
-	
-	private String TYPE;
+
+	private String TYPE = AndroidConstants.ABI_ARM;
 	private String pattern;
 	private Path input, output;
 	private static Boolean sKeepDir = false;
+	private static Boolean sMode = false;
 	StandardCopyOption copyOption = StandardCopyOption.REPLACE_EXISTING;
-	
-	public SlimApk(String input, String output, String arch, Boolean keepDir, String pattern) {
-		if(output == null) output = System.getProperty("user.dir");
+
+	public SlimApk(String input, String output) {
+		if (output == null) output = System.getProperty("user.dir");
 		setWorkingDir(input, output);
-		this.sKeepDir = keepDir;
-		this.pattern = pattern;
-		if (arch == null) arch = "arm";
-		setType(arch);
 	}
-	
-	public void setWorkingDir(String input, String output) {
+
+	public SlimApk(String input, String output, Boolean keepDir, String patt) {
+		this(input, output);
+		sKeepDir = keepDir;
+		pattern = patt;
+	}
+
+	private void setWorkingDir(String in , String out) {
 		try {
-			this.input = Paths.get(input);
-			this.output = Paths.get(output);
-			if (!Files.exists(this.input)) throw new IOException(input);
-			if (!Files.exists(this.output)) {
-				Files.createDirectories(this.output);
+			input = Paths.get( in );
+			output = Paths.get(out);
+			if (!Files.exists(input)) throw new IOException( in );
+			if (!Files.exists(output)) {
+				Files.createDirectories(output);
 			}
 			System.out.printf("Input file/directory: %s\nOutput file/directory: %s\n",
-			this.input.toAbsolutePath(), this.output.toAbsolutePath());
+			input.toAbsolutePath(), output.toAbsolutePath());
 		} catch (IOException e) {
-			System.err.format("No such file or directory:\n %s%n", e.getMessage());
+			System.out.format("No such file or directory:\n %s%n", e.getMessage());
 			System.exit(1);
 		}
 	}
-	
-	public void setType(String app_architecture) {
-		switch (app_architecture) {
+
+	public void setType(String app_arch) {
+		if (app_arch != null) switch (app_arch) {
 			case "arm64":
-				this.TYPE = "arm64-v8a";
+				TYPE = AndroidConstants.ABI_ARMv8;
 				break;
 			case "x86":
-				this.TYPE = "x86";
+				TYPE = AndroidConstants.ABI_X86;
 				break;
 			default:
-				this.TYPE = "armeabi-v7a";
+				TYPE = AndroidConstants.ABI_ARMv7;
 		}
 	}
-	
+
+	public void setSpeedMode(Boolean mode) {
+		sMode = mode;
+	}
+
+	public void setSaveMode(Boolean keepDir) {
+		sKeepDir = keepDir;
+	}
+
+	public void setPattern(String patt) {
+		pattern = patt;
+	}
+
 	public void unzipApk(Path file) {
-		
+
 		Path apk = createWorkplace(file);
 		Path apkHome = apk.getParent();
 		String ApkName = null;
@@ -67,35 +82,37 @@ public class SlimApk implements Closeable {
 			final Path root = ApkFileSystem.getPath("/");
 			extractLibrary(root, apkHome);
 			boolean smode = true;
-			if (pattern != null || smode==true) {
+			if (pattern != null || smode == true) {
 				ApkName = getNameApk(new FileNameParser(pattern), apk);
 			} else {
 				ApkName = getNameApk(new FileXMLParser(), root);
-			}			
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-		try{
-			Files.move(apk, apk.resolveSibling(ApkName + ".apk"), copyOption);
-			Files.move(apkHome, apkHome.resolveSibling(ApkName), copyOption);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			try {
+				Files.move(apk, apk.resolveSibling(ApkName + ".apk"), copyOption);
+				Files.move(apkHome, apkHome.resolveSibling(ApkName), copyOption);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
-	private String getNameApk(NameParser ApkName, Path path){
+
+	/* get Name Apk of androidmanifest.xml or File Name */
+	private String getNameApk(NameParser ApkName, Path path) {
 		ApkName.setName(path);
-		//get Name Apk of androidmanifest.xml or File Name
 		ApkName.parseData();
-		
+
 		return ApkName.getName();
 	}
+
 	private Path createWorkplace(Path file) {
 
 		Path ApkFileOut = file.getFileName();
 		Path ApkDirOut = input.relativize(file);
-		
-		if(sKeepDir){
+
+		if (sKeepDir) {
 			ApkDirOut = ApkDirOut.resolveSibling(ApkFileOut);
 			ApkDirOut = output.resolve(ApkDirOut);
 			System.out.printf("processing...\n File: %s\n Directory: %s\n", ApkFileOut, ApkDirOut);
@@ -103,28 +120,28 @@ public class SlimApk implements Closeable {
 			ApkDirOut = output.resolve(ApkFileOut);
 			System.out.printf("processing...\n File: %s\n", ApkFileOut);
 		}
-		
+
 		ApkFileOut = ApkDirOut.resolve(ApkFileOut);
-		
-		try{
+
+		try {
 			Files.createDirectories(ApkDirOut);
 			Files.copy(file, ApkFileOut, copyOption);
 		} catch (IOException e) {
 			e.printStackTrace();
-		} 
+		}
 		return ApkFileOut;
 	}
+	
 	private void extractLibrary(Path root, Path outPath) throws IOException {
-		Path libdir = root.resolve("lib");
+		final Path libdir = root.resolve(AndroidConstants.LIB_PREFIX);
 
 		if (Files.exists(libdir)) {
 			outPath = outPath.resolve(AndroidConstants.LIB_DIR);
 			if (!Files.exists(outPath)) Files.createDirectories(outPath);
 			parseLibrary(libdir, outPath);
-			deleteLibrary(libdir);
+			deleteDirectory(libdir);
 		}
 
-		System.out.println("Unpacked library is completed!");
 	}
 
 	private void parseLibrary(Path root, Path outPath) throws IOException {
@@ -141,7 +158,7 @@ public class SlimApk implements Closeable {
 		};
 
 		final Path curPath = root.resolve(TYPE);
-		final Path defPath = root.resolve(AndroidConstants.TYPE);
+		final Path defPath = root.resolve(AndroidConstants.ABI_ARM);
 
 		if (Files.exists(curPath)) {
 			Files.walkFileTree(curPath, ApkLibParser);
@@ -150,7 +167,7 @@ public class SlimApk implements Closeable {
 		}
 	}
 
-	private void deleteLibrary(Path libdir) throws IOException {
+	private void deleteDirectory(Path dir) throws IOException {
 		ApkFileVisitor ApkLibDelParser = new ApkFileVisitor() {
 			public void actionDir(Path dir) {
 				try {
@@ -167,7 +184,7 @@ public class SlimApk implements Closeable {
 				}
 			}
 		};
-		Files.walkFileTree(libdir, ApkLibDelParser);
+		Files.walkFileTree(dir, ApkLibDelParser);
 	}
 
 	public void unZipIt() {
