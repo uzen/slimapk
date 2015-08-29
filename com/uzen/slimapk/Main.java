@@ -4,7 +4,7 @@ import java.io.IOException;
 import com.uzen.slimapk.SlimApk;
 
 class Main {
-	private static final String VERSION = "1.0.2";
+	private static final String VERSION = "1.0.3";
 	private static void usage(String msg) {
 		System.out.println(msg);
 		System.exit(1);

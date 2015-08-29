@@ -2,7 +2,7 @@ package com.uzen.slimapk.Parser;
 
 import java.nio.file.*;
 
-public class ParseFileXML implements ParseName {
+public class FileXMLParser implements NameParser {
 	
 	private Path root;
 	

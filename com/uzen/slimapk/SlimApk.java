@@ -2,7 +2,6 @@ package com.uzen.slimapk;
 
 import java.io.Closeable;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.net.URI;
 import java.io.IOException;
@@ -25,6 +24,7 @@ public class SlimApk implements Closeable {
 		if (arch == null) arch = "arm";
 		setType(arch);
 	}
+	
 	public void setWorkingDir(String input, String output) {
 		try {
 			this.input = Paths.get(input);
@@ -40,6 +40,7 @@ public class SlimApk implements Closeable {
 			System.exit(1);
 		}
 	}
+	
 	public void setType(String app_architecture) {
 		switch (app_architecture) {
 			case "arm64":
@@ -52,6 +53,7 @@ public class SlimApk implements Closeable {
 				this.TYPE = "armeabi-v7a";
 		}
 	}
+	
 	public void unzipApk(Path file) {
 		
 		Path apk = createWorkplace(file);
@@ -64,10 +66,11 @@ public class SlimApk implements Closeable {
 		try (FileSystem ApkFileSystem = FileSystems.newFileSystem(uri, env)) {
 			final Path root = ApkFileSystem.getPath("/");
 			extractLibrary(root, apkHome);
-			if (pattern != null) {
-				ApkName = getNameApk(new ParseFileXML(), root);
+			boolean smode = true;
+			if (pattern != null || smode==true) {
+				ApkName = getNameApk(new FileNameParser(pattern), apk);
 			} else {
-				ApkName = getNameApk(new ParseFileName(pattern), apk);
+				ApkName = getNameApk(new FileXMLParser(), root);
 			}			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -80,10 +83,11 @@ public class SlimApk implements Closeable {
 		}
 		}
 	}
-	private String getNameApk(ParseName ApkName, Path path){
+	private String getNameApk(NameParser ApkName, Path path){
 		ApkName.setName(path);
 		//get Name Apk of androidmanifest.xml or File Name
 		ApkName.parseData();
+		
 		return ApkName.getName();
 	}
 	private Path createWorkplace(Path file) {
@@ -125,13 +129,12 @@ public class SlimApk implements Closeable {
 
 	private void parseLibrary(Path root, Path outPath) throws IOException {
 
-		ApkFileMethod method = new ApkFileMethod(outPath) {
-			public void actionDir(Path dir) {};
+		ApkFileVisitor ApkLibParser = new ApkFileVisitor(outPath) {
+			public void actionDir(Path dir) {}
 			public void actionFile(Path file) {
 				try {
 					Files.move(file, target.resolve(file.getFileName().toString()), copyOption);
 				} catch (IOException e) {
-					
 					e.printStackTrace();
 				}
 			}
@@ -141,14 +144,14 @@ public class SlimApk implements Closeable {
 		final Path defPath = root.resolve(AndroidConstants.TYPE);
 
 		if (Files.exists(curPath)) {
-			Files.walkFileTree(curPath, new ApkFileVisitor(method));
+			Files.walkFileTree(curPath, ApkLibParser);
 		} else if (Files.exists(defPath)) {
-			Files.walkFileTree(defPath, new ApkFileVisitor(method));
+			Files.walkFileTree(defPath, ApkLibParser);
 		}
 	}
 
 	private void deleteLibrary(Path libdir) throws IOException {
-		ApkFileMethod method = new ApkFileMethod() {
+		ApkFileVisitor ApkLibDelParser = new ApkFileVisitor() {
 			public void actionDir(Path dir) {
 				try {
 					Files.delete(dir);
@@ -164,54 +167,22 @@ public class SlimApk implements Closeable {
 				}
 			}
 		};
-		Files.walkFileTree(libdir, new ApkFileVisitor(method));
+		Files.walkFileTree(libdir, ApkLibDelParser);
 	}
 
 	public void unZipIt() {
 		try {
-			ApkFileMethod method = new ApkFileMethod() {
+			ApkFileVisitor ApkParser = new ApkFileVisitor() {
+				public void actionDir(Path dir) {}
 				private PathMatcher matcher = FileSystems.getDefault().getPathMatcher("regex:\\S+\\.apk");
-				public void actionDir(Path dir) {};
 				public void actionFile(Path file) {
 					if (matcher.matches(file)) unzipApk(file);
 				}
 			};
-			Files.walkFileTree(input, new ApkFileVisitor(method));
+			Files.walkFileTree(input, ApkParser);
 			System.out.println("File search completed!");
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-	}
-
-	private abstract class ApkFileMethod {
-		Path target;
-
-		ApkFileMethod() {
-			//nothing   	
-		};
-
-		ApkFileMethod(Path t) {
-			target = t;
-		}
-
-		abstract void actionDir(Path dir);
-		abstract void actionFile(Path file);
-	}
-
-	class ApkFileVisitor extends SimpleFileVisitor <Path> {
-
-		private ApkFileMethod m;
-
-		public ApkFileVisitor(ApkFileMethod method) {
-			m = method;
-		}@Override
-		public FileVisitResult visitFile(Path path, BasicFileAttributes fileAttributes) {
-			m.actionFile(path);
-			return FileVisitResult.CONTINUE;
-		}@Override
-		public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-			m.actionDir(dir);
-			return FileVisitResult.CONTINUE;
 		}
 	}
 
@@ -219,5 +190,4 @@ public class SlimApk implements Closeable {
 	public void close() throws IOException {
 		System.out.println("bye-bye;)");
 	}
-
 }
