@@ -2,7 +2,7 @@ package com.uzen.slimapk.Parser;
 
 import java.nio.file.*; 
 
-public interface ParseName {
+public interface NameParser {
 
 	void setName(Path file);
 		

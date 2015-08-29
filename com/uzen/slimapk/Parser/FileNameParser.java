@@ -4,11 +4,12 @@ import java.util.regex.*;
 import java.nio.file.*;
 import java.io.IOException;
 
-public class ParseFileName implements ParseName {
+public class FileNameParser implements NameParser {
 	private String name;
+	// default tempale
 	private String pattern = "^(.+?)\\.apk";
 	
-	public ParseFileName(String patt) {	// default tempale
+	public FileNameParser(String patt) {	
 		if(patt != null) this.pattern = patt;
 	}
 	public void setName(Path file) {
@@ -21,7 +22,10 @@ public class ParseFileName implements ParseName {
 				name = patt.group(1).toLowerCase();
 				name = name.substring(0, 1).toUpperCase() + name.substring(1);
 			}
-		} catch (NullPointerException e) {}
+		} catch (PatternSyntaxException e) {
+			System.out.printf("Invalid regular expression: %s\n (https://docs.oracle.com/javase/tutorial/essential/regex/)\n", e.getMessage());
+			System.exit(2);
+		}
 	}
 	public String getName() {
 		return this.name;
