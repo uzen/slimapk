@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public abstract class ApkFileVisitor extends SimpleFileVisitor <Path> {
 	
-		public Path target;
+		protected Path target;
 		
 		public ApkFileVisitor() {
 			//nothing   	
