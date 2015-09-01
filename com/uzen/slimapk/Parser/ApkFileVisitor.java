@@ -4,7 +4,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.io.IOException;
 
-public abstract class ApkFileVisitor extends SimpleFileVisitor <Path> {
+public class ApkFileVisitor extends SimpleFileVisitor <Path> {
 	
 		protected Path target;
 		
@@ -16,8 +16,13 @@ public abstract class ApkFileVisitor extends SimpleFileVisitor <Path> {
 			target = dir;
 		}
 		
-		public abstract void actionFile(Path file);
-		public abstract void actionDir(Path dir);
+		public void actionFile(Path file) {
+			//nothing   
+		};
+		
+		public void actionDir(Path dir) {
+			//nothing   
+		};
 		
 		@Override
 		public FileVisitResult visitFile(Path path, BasicFileAttributes fileAttributes) {
