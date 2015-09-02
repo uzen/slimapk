@@ -1,10 +1,17 @@
 package com.uzen.slimapk;
-import java.io.Closeable;
-import java.nio.file.*;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.DirectoryStream;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.HashMap;
 import java.net.URI;
 import java.io.IOException;
+import java.io.Closeable;
+
 import com.uzen.slimapk.Parser.*;
 import com.uzen.slimapk.struct.*;
 
@@ -15,16 +22,16 @@ public class SlimApk implements Closeable {
 	
 	public SlimApk(String input, String output, ApkOptions Options) {
 		if (output == null) output = System.getProperty("user.dir");
-		this.input = Paths.get(input);
-		this.output = Paths.get(output);
 		this.Options = Options;
 		try {
+			this.input = FileSystems.getDefault().getPath(input);
+			this.output = FileSystems.getDefault().getPath(output);
 			createWorkingDir();
 			setType();
 		} catch (IOException e) {
 			debug("No such file or directory:\n>> " + e.getMessage());
-		} catch (NullPointerException d) {
-			debug(d.getMessage());
+		} catch (NullPointerException npe) {
+			debug(npe.getMessage());
 		}
 	}
 	
@@ -90,7 +97,7 @@ public class SlimApk implements Closeable {
 	}
 
 	/* get Name Apk of androidmanifest.xml or File Name */
-	private String getNameApk(NameParser ApkName, Path path) {
+	private static String getNameApk(NameParser ApkName, Path path) {
 		ApkName.setName(path);
 		ApkName.parseData();
 
@@ -146,7 +153,7 @@ public class SlimApk implements Closeable {
 		return true;
 	}
 
-	private void deleteDirectories(Path dir) throws IOException {
+	private static void deleteDirectories(Path dir) throws IOException {
 		ApkFileVisitor ApkLibDelParser = new ApkFileVisitor() {
 			@Override
 			public void actionDir(Path dir) {
@@ -167,8 +174,8 @@ public class SlimApk implements Closeable {
 		};
 		Files.walkFileTree(dir, ApkLibDelParser);
 	}
-
-	public void unZipIt() {
+	
+	public void parseDirectories() {
 		try {
 			ApkFileVisitor ApkParser = new ApkFileVisitor() {
 				@Override
