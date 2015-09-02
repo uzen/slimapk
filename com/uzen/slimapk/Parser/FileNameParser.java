@@ -7,29 +7,35 @@ import java.io.IOException;
 public class FileNameParser implements NameParser {
 	private String name;
 	// default tempale
-	private Pattern pattern;
+	private String patt;
 	
-	public FileNameParser(String patt) {	
-		if(patt == null || patt.isEmpty()) patt = "^(.+?)\\.apk";
-		pattern = Pattern.compile(patt, Pattern.CASE_INSENSITIVE);
+	public FileNameParser(String spatt) {	
+		if(spatt == null || spatt.isEmpty()){
+			patt = "^(.+?)\\.apk";  //chrome.apk -> Chrome	
+		} else patt = spatt;
 	}
+	
 	public void setName(Path file) {
 		this.name = file.getFileName().toString();
 	}
 	
-	public void parseData() { //chrome.apk -> Chrome
-		try {
+	public void parseData() {
+		try{
+			Pattern pattern = Pattern.compile(patt, Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(name);
 			while (matcher.find()) {
 				name = matcher.group(matcher.groupCount());
 				name = name.toLowerCase();
 				name = name.substring(0, 1).toUpperCase() + name.substring(1);
-			}	
+			};
 		} catch (PatternSyntaxException e) {
-			System.out.printf("Invalid regular expression: %s\n (https://docs.oracle.com/javase/tutorial/essential/regex/)\n", e.getMessage());
-			System.exit(2);
+			System.out.printf("Invalid regular expression: %s\n", e.getMessage());
 		}
 	}
+	public String getPattern() {
+		return this.patt;
+	}
+	
 	public String getName() {
 		return this.name;
 	}
