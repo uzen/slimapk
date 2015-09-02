@@ -20,18 +20,25 @@ public class FileNameParser implements NameParser {
 	}
 	
 	public void parseData() {
+		String tmp_name = name;
 		try{
 			Pattern pattern = Pattern.compile(patt, Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(name);
-			while (matcher.find()) {
-				name = matcher.group(matcher.groupCount());
-				name = name.toLowerCase();
-				name = name.substring(0, 1).toUpperCase() + name.substring(1);
+			
+			if (matcher.find()) {
+				tmp_name = matcher.group();
 			};
 		} catch (PatternSyntaxException e) {
 			System.out.printf("Invalid regular expression: %s\n", e.getMessage());
+		} finally {
+			if(!tmp_name.isEmpty())
+			 name = tmp_name;
 		}
+		
+		name = name.toLowerCase();
+		name = name.substring(0, 1).toUpperCase() + name.substring(1);
 	}
+	
 	public String getPattern() {
 		return this.patt;
 	}

@@ -12,6 +12,7 @@ public class SlimApk implements Closeable {
 	private ApkOptions Options;
 	private Path input, output, temp;
 	private static final StandardCopyOption copyOption = StandardCopyOption.COPY_ATTRIBUTES;
+	
 	public SlimApk(String input, String output, ApkOptions Options) {
 		if (output == null) output = System.getProperty("user.dir");
 		this.input = Paths.get(input);
@@ -83,7 +84,7 @@ public class SlimApk implements Closeable {
 			try {
 				Files.move(path[0], path[1]);
 			} catch (IOException e) {
-				debug("No such file or directory:\n>> " + e.getMessage());
+				e.printStackTrace();
 			}
 		}
 	}
@@ -181,7 +182,6 @@ public class SlimApk implements Closeable {
 				}
 			};
 			Files.walkFileTree(input, ApkParser);
-			System.out.println("File search completed!");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
