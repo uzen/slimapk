@@ -1,5 +1,4 @@
 package com.uzen.slimapk;
-
 import java.io.Closeable;
 import java.nio.file.*;
 import java.util.Map;
@@ -10,193 +9,192 @@ import com.uzen.slimapk.Parser.*;
 import com.uzen.slimapk.struct.*;
 
 public class SlimApk implements Closeable {
-    
-    private ApkOptions Options;
-    private Path input, output;
-    private StandardCopyOption copyOption = StandardCopyOption.REPLACE_EXISTING;
+	private ApkOptions Options;
+	private Path input, output, temp;
+	private static final StandardCopyOption copyOption = StandardCopyOption.COPY_ATTRIBUTES;
+	public SlimApk(String input, String output, ApkOptions Options) {
+		if (output == null) output = System.getProperty("user.dir");
+		this.input = Paths.get(input);
+		this.output = Paths.get(output);
+		this.Options = Options;
+		try {
+			createWorkingDir();
+			setType();
+		} catch (IOException e) {
+			debug("No such file or directory:\n>> " + e.getMessage());
+		} catch (NullPointerException d) {
+			debug(d.getMessage());
+		}
+	}
+	
+	private void createWorkingDir() throws IOException {
+		if (Files.notExists(input)) throw new IOException(input.toString());
+		Files.createDirectories(output);
+		temp = Files.createTempDirectory("slim_");
+	}
+	
+	private void setType() throws NullPointerException {
+		String abi, type = Options.getType();
+		if (type == null) {
+			throw new NullPointerException("Variable 'type' was null inside method getType.");
+		}
+		switch (type) {
+			case "arm":
+				abi = AndroidConstants.ABI_ARMv7;
+				break;
+			case "arm64":
+				abi = AndroidConstants.ABI_ARMv8;
+				break;
+			case "x86":
+				abi = AndroidConstants.ABI_X86;
+				break;
+			default:
+				abi = AndroidConstants.ABI_ARM;
+		}
+		Options.setABI(abi);
+	}
+	private void unzipApk(Path apk) {
+		Path[] path = createWorkplace(apk);
+		/*
+		 path[0]: current apk file(tmp)
+		 path[1]: output apk file
+		*/
+		Map < String, String > env = new HashMap < > ();
+		URI uri = URI.create("jar:file:" + path[0].toAbsolutePath());
 
-    private SlimApk(String input, String output) {
-        if (output == null) output = System.getProperty("user.dir");
-        this.input = Paths.get(input);
-        this.output = Paths.get(output);
-    }
+		try (FileSystem ApkFileSystem = FileSystems.newFileSystem(uri, env)) {
+			final Path root = ApkFileSystem.getPath("/");
+			String ApkName, pattern = Options.getPattern();
 
-    public SlimApk(String input, String output, ApkOptions Options){
-        this(input, output);
-        this.Options = Options;
-        try{
-            createWorkDir();
-            setType();
-        } catch (IOException e) {
-            debug("No such file or directory:\n>> " + e.getMessage());
-        } catch (NullPointerException d) {
-        		debug(d.getMessage());
-        } 
-    }
+			if (pattern != null || Options.getSpeedMode() == true) {
+				ApkName = getNameApk(new FileNameParser(pattern), path[0]);
+			} else {
+				ApkName = getNameApk(new FileXMLParser(), root);
+			}
 
-    private void createWorkDir() throws IOException {
-            if (Files.notExists(input)) throw new IOException(input.toString());
-            if (Files.notExists(output)) {
-                Files.createDirectories(output);
-            }
-    }
+			path[1] = path[1].resolveSibling(ApkName);
+			if (Files.exists(path[1])) deleteDirectories(path[1]);
+			Files.createDirectories(path[1]);
+			extractLibrary(root, path[1]);
+			path[1] = path[1].resolve(ApkName + ".apk");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				Files.move(path[0], path[1]);
+			} catch (IOException e) {
+				debug("No such file or directory:\n>> " + e.getMessage());
+			}
+		}
+	}
 
-    private void setType() throws NullPointerException {
-        String abi, type = Options.getType();
-        if(type == null) {
-            throw new NullPointerException("Variable 'type' was null inside method getType.");
-        }
-        switch (type) {
-            case "arm":
-                abi = AndroidConstants.ABI_ARMv7;
-                break;
-            case "arm64":
-                abi = AndroidConstants.ABI_ARMv8;
-                break;
-            case "x86":
-                abi = AndroidConstants.ABI_X86;
-                break;
-            default:
-                abi = AndroidConstants.ABI_ARM;
-        }
-        Options.setABI(abi);
-    }
+	/* get Name Apk of androidmanifest.xml or File Name */
+	private String getNameApk(NameParser ApkName, Path path) {
+		ApkName.setName(path);
+		ApkName.parseData();
 
-    public void unzipApk(Path file) {
+		return ApkName.getName();
+	}
 
-        Path apk = createWorkplace(file);
-        Path nadir = apk.getParent();
-        String ApkName = null, pattern = Options.getPattern();
+	private Path[] createWorkplace(final Path source) {
 
-        Map < String, String > env = new HashMap < > ();
-        URI uri = URI.create("jar:file:" + apk.toAbsolutePath());
+		Path[] path = new Path[] {
+			source, input.relativize(source)
+		};
 
-        try (FileSystem ApkFileSystem = FileSystems.newFileSystem(uri, env)) {
-            final Path root = ApkFileSystem.getPath("/");
-            extractLibrary(root, nadir);
-            
-            if (pattern != null || Options.getSpeedMode() == true) {
-                ApkName = getNameApk(new FileNameParser(pattern), apk);
-            } else {
-                ApkName = getNameApk(new FileXMLParser(), root);
-            }
-            nadir = nadir.resolveSibling(ApkName);
-            if(Files.exists(nadir)) deleteDirectories(nadir);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                Files.move(apk, apk.resolveSibling(ApkName + ".apk"), copyOption);
-                Files.move(apk.getParent(), nadir, copyOption);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+		path[0] = source.getFileName();
 
-    /* get Name Apk of androidmanifest.xml or File Name */
-    private String getNameApk(NameParser ApkName, Path path) {
-        ApkName.setName(path);
-        ApkName.parseData();
+		if (Options.getKeepMode()) {
+			path[1] = output.resolve(path[1]);
+			System.out.printf("processing...\n>> %s\nto: %s\n", path[0], path[1]);
+		} else {
+			path[1] = output.resolve(path[0]);
+			System.out.printf("processing...\n>> %s\n", path[0]);
+		}
 
-        return ApkName.getName();
-    }
+		path[0] = temp.resolve(path[0]);
 
-    private Path createWorkplace(Path file) {
+		try {
+			Files.copy(source, path[0], copyOption);
+		} catch (IOException e) {
+			debug("error occurred while copying to a temporary directory:\n" + e.getMessage());
+		}
+		return path;
+	}
 
-        Path ApkFileOut = file.getFileName();
-        Path ApkDirOut = input.relativize(file);
+	private void extractLibrary(Path root, Path outPath) throws IOException {
+		final Path libdir = root.resolve(AndroidConstants.LIB_PREFIX);
 
-        if (Options.getKeepMode()) {
-            ApkDirOut = ApkDirOut.resolveSibling(ApkFileOut);
-            ApkDirOut = output.resolve(ApkDirOut);
-            System.out.printf("processing...\n >>%s\n to: %s\n", ApkFileOut, ApkDirOut);
-        } else {
-            ApkDirOut = output.resolve(ApkFileOut);
-            System.out.printf("processing...\n >>%s\n", ApkFileOut);
-        }
+		outPath = outPath.resolve(AndroidConstants.LIB_DIR);
+		if (parseLibrary(libdir, outPath)) deleteDirectories(libdir);
+	}
 
-        ApkFileOut = ApkDirOut.resolve(ApkFileOut);
+	private boolean parseLibrary(Path root, Path outPath) throws IOException {
 
-        try {
-            Files.createDirectories(ApkDirOut);
-            Files.copy(file, ApkFileOut, copyOption);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return ApkFileOut;
-    }
-    
-    private void extractLibrary(Path root, Path outPath) throws IOException {
-        final Path libdir = root.resolve(AndroidConstants.LIB_PREFIX);
+		final Path curPath = root.resolve(Options.getType());
+		final Path defPath = root.resolve(AndroidConstants.ABI_ARM);
+		final Path dirPath = (Files.exists(curPath)) ? curPath : (Files.exists(defPath)) ? defPath : null;
 
-        if (Files.exists(libdir)) {
-            outPath = outPath.resolve(AndroidConstants.LIB_DIR);
-            if (!Files.exists(outPath)) Files.createDirectories(outPath);
-            parseLibrary(libdir, outPath);
-            deleteDirectories(libdir);
-        }
+		if (dirPath == null) return false;
+		Files.createDirectories(outPath);
+		try (DirectoryStream < Path > stream = Files.newDirectoryStream(dirPath)) {
+			for (Path file: stream) {
+				Files.copy(file, outPath.resolve(file.getFileName().toString()), copyOption);
+			}
+		}
+		return true;
+	}
 
-    }
+	private void deleteDirectories(Path dir) throws IOException {
+		ApkFileVisitor ApkLibDelParser = new ApkFileVisitor() {
+			@Override
+			public void actionDir(Path dir) {
+				try {
+					Files.delete(dir);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			};
+			@Override
+			public void actionFile(Path file) {
+				try {
+					Files.delete(file);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		Files.walkFileTree(dir, ApkLibDelParser);
+	}
 
-    private void parseLibrary(Path root, Path outPath) throws IOException {
+	public void unZipIt() {
+		try {
+			ApkFileVisitor ApkParser = new ApkFileVisitor() {
+				@Override
+				public void actionFile(Path file) {
+					String name = file.toString();
+					int c = name.length();
+					if (c > 4) {
+						name = name.substring(c - 4, c).toLowerCase();
+						if (name.equals(".apk")) unzipApk(file);
+					}
+				}
+			};
+			Files.walkFileTree(input, ApkParser);
+			System.out.println("File search completed!");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void debug(String msg) {
+		System.out.println(msg);
+		System.exit(1);
+	}
 
-        final Path curPath = root.resolve(Options.getType());
-        final Path defPath = root.resolve(AndroidConstants.ABI_ARM);
-        final Path dirPath = (Files.exists(curPath)) ? curPath: defPath;
-        
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath)) {
-            for (Path file: stream) {
-           Files.move(file, outPath.resolve(file.getFileName().toString()), copyOption);
-            }
-        }
-    }
-
-    private void deleteDirectories(Path dir) throws IOException {
-        ApkFileVisitor ApkLibDelParser = new ApkFileVisitor() {
-            public void actionDir(Path dir) {
-                try {
-                    Files.delete(dir);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            };
-            public void actionFile(Path file) {
-                try {
-                    Files.delete(file);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        Files.walkFileTree(dir, ApkLibDelParser);
-    }
-
-    public void unZipIt() {
-        try {
-            ApkFileVisitor ApkParser = new ApkFileVisitor() {
-                public void actionFile(Path file) {
-                	String name = file.toString();
-                	int c;
-                	if((c = name.length()) > 4) {
-                		name = name.substring(c-4,c).toUpperCase();
-                    	if (name.equals(".APK")) unzipApk(file);
-                  }
-                }
-            };
-            Files.walkFileTree(input, ApkParser);
-            System.out.println("File search completed!");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    public static void debug(String msg) {
-        System.out.println(msg);
-        System.exit(1);
-    }
-    	
-    @Override
-    public void close() throws IOException {
-        System.out.println("bye-bye;)");
-    }
+	@Override
+	public void close() throws IOException {
+		temp.toFile().deleteOnExit();
+		System.out.println("bye-bye;)");
+	}
 }
