@@ -21,13 +21,11 @@ public class FileNameParser implements NameParser {
 	
 	public void parseData() {
 		try{
-			String tmp_name = null;
 			Pattern pattern = Pattern.compile(patt, Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(name);
 			
 			if (matcher.find() && matcher.groupCount() > 0) {
-				tmp_name = matcher.group(1);
-				name = tmp_name;
+				name = matcher.group(1);
 			};
 		} catch (PatternSyntaxException e) {
 			System.out.printf("Invalid regular expression: %s\n", e.getMessage());

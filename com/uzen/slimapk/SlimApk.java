@@ -90,6 +90,7 @@ public class SlimApk implements Closeable {
 		} finally {
 			try {
 				Files.move(path[0], path[1]);
+				System.out.printf("done: \n>>>%s\n", path[1].toString());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -114,12 +115,12 @@ public class SlimApk implements Closeable {
 
 		if (Options.getKeepMode()) {
 			path[1] = output.resolve(path[1]);
-			System.out.printf("processing...\n>> %s\n", path[0]);
 		} else {
 			path[1] = output.resolve(path[0]);
-			System.out.printf("processing...\n>> %s\n", path[0]);
 		}
-
+		
+		System.out.printf("processing...\n>> %s\n", path[0]);
+		
 		path[0] = temp.resolve(path[0]);
 
 		try {
