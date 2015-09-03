@@ -114,7 +114,7 @@ public class SlimApk implements Closeable {
 
 		if (Options.getKeepMode()) {
 			path[1] = output.resolve(path[1]);
-			System.out.printf("processing...\n>> %s\nto: %s\n", path[0], path[1]);
+			System.out.printf("processing...\n>> %s\n", path[0]);
 		} else {
 			path[1] = output.resolve(path[0]);
 			System.out.printf("processing...\n>> %s\n", path[0]);
@@ -139,7 +139,7 @@ public class SlimApk implements Closeable {
 
 	private boolean parseLibrary(Path root, Path outPath) throws IOException {
 
-		final Path curPath = root.resolve(Options.getType());
+		final Path curPath = root.resolve(Options.getABI());
 		final Path defPath = root.resolve(AndroidConstants.ABI_ARM);
 		final Path dirPath = (Files.exists(curPath)) ? curPath : (Files.exists(defPath)) ? defPath : null;
 
@@ -150,6 +150,7 @@ public class SlimApk implements Closeable {
 				Files.copy(file, outPath.resolve(file.getFileName().toString()), copyOption);
 			}
 		}
+
 		return true;
 	}
 
