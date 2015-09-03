@@ -26,7 +26,7 @@ public class FileNameParser implements NameParser {
 			Matcher matcher = pattern.matcher(name);
 			
 			if (matcher.find()) {
-				tmp_name = matcher.group();
+				tmp_name = matcher.group(1);
 			};
 		} catch (PatternSyntaxException e) {
 			System.out.printf("Invalid regular expression: %s\n", e.getMessage());
