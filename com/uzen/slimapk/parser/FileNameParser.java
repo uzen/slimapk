@@ -1,4 +1,4 @@
-package com.uzen.slimapk.Parser;
+package com.uzen.slimapk.parser;
 
 import java.util.regex.*;
 import java.nio.file.*;
@@ -41,5 +41,9 @@ public class FileNameParser implements NameParser {
 	
 	public String getName() {
 		return this.name;
+	}
+	
+	public String getVersion() {
+		return null;
 	}
 }

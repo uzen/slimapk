@@ -12,8 +12,12 @@ import java.net.URI;
 import java.io.IOException;
 import java.io.Closeable;
 
-import com.uzen.slimapk.Parser.*;
-import com.uzen.slimapk.struct.*;
+import com.uzen.slimapk.parser.NameParser;
+import com.uzen.slimapk.parser.FileNameParser;
+import com.uzen.slimapk.parser.FileXMLParser;
+import com.uzen.slimapk.parser.ApkFileVisitor;
+import com.uzen.slimapk.struct.AndroidConstants;
+import com.uzen.slimapk.struct.ApkOptions;
 
 public class SlimApk implements Closeable {
 	private ApkOptions Options;

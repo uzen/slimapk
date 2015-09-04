@@ -1,4 +1,4 @@
-package com.uzen.slimapk.Parser;
+package com.uzen.slimapk.parser;
 
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
