@@ -6,14 +6,12 @@ public class ApkOptions {
     private final String type;
     private final String pattern;
     private final Boolean keepMode;
-    private final Boolean speedMode;
     private final Boolean cleanMode;
     
-    public ApkOptions(String type, String pattern, Boolean keepMode, Boolean speedMode, Boolean cleanMode) {
+    public ApkOptions(String type, String pattern, Boolean keepMode, Boolean cleanMode) {
         this.type = type;
         this.pattern = pattern;
         this.keepMode = keepMode;
-        this.speedMode = speedMode;
         this.cleanMode = cleanMode;
     }
     
@@ -35,10 +33,6 @@ public class ApkOptions {
 
     public Boolean getCleanMode() {
         return cleanMode;
-    }
-    
-    public Boolean getSpeedMode() {
-        return speedMode;
     }
 
     public Boolean getKeepMode() {
