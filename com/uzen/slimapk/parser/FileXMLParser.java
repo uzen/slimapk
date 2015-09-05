@@ -50,8 +50,8 @@ public class FileXMLParser implements NameParser {
    };
    
    
-	private void transBinaryXml(Path manifestXml, XmlStreamer xmlStreamer) throws IOException {
-     /*
+	 /*private void transBinaryXml(Path manifestXml, XmlStreamer xmlStreamer) throws IOException {
+    
      if (this.resourceTable == null) {
          parseResourceTable();
      }
@@ -62,8 +62,8 @@ public class FileXMLParser implements NameParser {
      binaryXmlParser.setLocale(preferredLocale);
      binaryXmlParser.setXmlStreamer(xmlStreamer);
      binaryXmlParser.parse();
-     */
-	}
+     
+	}*/
      
 	private void parseResourceTable() throws IOException {
 	/*
