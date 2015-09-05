@@ -24,23 +24,17 @@ public class SlimApk implements Closeable {
 	private Path input, output, temp;
 	private static final StandardCopyOption copyOption = StandardCopyOption.COPY_ATTRIBUTES;
 	
-	public SlimApk(String input, String output, ApkOptions Options) {
+	public SlimApk(String input, String output, ApkOptions Options) throws IOException {
 		if (output == null) output = System.getProperty("user.dir");
 		this.Options = Options;
-		try {
-			this.input = FileSystems.getDefault().getPath(input);
-			this.output = FileSystems.getDefault().getPath(output);
-			createWorkingDir();
-			setType();
-		} catch (IOException e) {
-			debug("No such file or directory:\n>> " + e.getMessage());
-		} catch (NullPointerException npe) {
-			debug(npe.getMessage());
-		}
+		this.input = FileSystems.getDefault().getPath(input);
+		this.output = FileSystems.getDefault().getPath(output);
+		createWorkingDir();
+		setType();
 	}
 	
 	private void createWorkingDir() throws IOException {
-		if (Files.notExists(input)) throw new IOException(input.toString());
+		if (Files.notExists(input)) throw new IOException("No such file or directory: " + input.toString());
 		Files.createDirectories(output);
 		temp = Files.createTempDirectory("slim_");
 	}
@@ -65,7 +59,7 @@ public class SlimApk implements Closeable {
 		}
 		Options.setABI(abi);
 	}
-	private void unzipApk(Path apk) {
+	private void unzipApk(Path apk) throws IOException {
 		Path[] path = createWorkplace(apk);
 		/*
 		 path[0]: current apk file(tmp)
@@ -78,7 +72,7 @@ public class SlimApk implements Closeable {
 			final Path root = ApkFileSystem.getPath("/");
 			String ApkName, pattern = Options.getPattern();
 
-			if (pattern != null || Options.getSpeedMode() == true) {
+			if (pattern != null) {
 				ApkName = getNameApk(new FileNameParser(pattern), path[0]);
 			} else {
 				ApkName = getNameApk(new FileXMLParser(), root);
@@ -89,13 +83,12 @@ public class SlimApk implements Closeable {
 			Files.createDirectories(path[1]);
 			extractLibrary(root, path[1]);
 			path[1] = path[1].resolve(ApkName + ".apk");
-		} catch (IOException e) {
-			e.printStackTrace();
 		} finally {
 			try {
 				Files.move(path[0], path[1]);
-				System.out.printf("done: \n>>>%s\n", path[1].toString());
+				System.out.printf("save: %s\n", path[1].toString());
 			} catch (IOException e) {
+				deleteDirectories(path[1]);
 				e.printStackTrace();
 			}
 		}
@@ -105,33 +98,33 @@ public class SlimApk implements Closeable {
 	private static String getNameApk(NameParser ApkName, Path path) {
 		ApkName.setName(path);
 		ApkName.parseData();
-
-		return ApkName.getName();
+		String name = ApkName.getName();
+		//if(list != null)
+		//list.put(name, ApkName.getVersion());
+		
+		return name;
 	}
 
-	private Path[] createWorkplace(final Path source) {
+	private Path[] createWorkplace(final Path source) throws IOException {
 
-		Path[] path = new Path[] {
-			source, input.relativize(source)
-		};
+		Path[] path = new Path[2];
 
-		path[0] = source.getFileName();
-
+		Path name = source.getFileName();
+		
+		System.out.printf("ext.: %s\n", name);
+		
+		path[0] = Files.copy(source, temp.resolve(name), copyOption);
+		
+		if (path[0] == null) {
+ 			throw new IOException ("Error occurred while copying to a temporary directory");
+      }
+      
 		if (Options.getKeepMode()) {
-			path[1] = output.resolve(path[1]);
+			path[1] = output.resolve(input.relativize(source));
 		} else {
-			path[1] = output.resolve(path[0]);
+			path[1] = output.resolve(name);
 		}
 		
-		System.out.printf("processing...\n>> %s\n", path[0]);
-		
-		path[0] = temp.resolve(path[0]);
-
-		try {
-			Files.copy(source, path[0], copyOption);
-		} catch (IOException e) {
-			debug("error occurred while copying to a temporary directory:\n" + e.getMessage());
-		}
 		return path;
 	}
 
@@ -190,7 +183,11 @@ public class SlimApk implements Closeable {
 					int c = name.length();
 					if (c > 4) {
 						name = name.substring(c - 4, c).toLowerCase();
-						if (name.equals(".apk")) unzipApk(file);
+						try{
+							if (name.equals(".apk")) unzipApk(file);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			};
@@ -200,14 +197,14 @@ public class SlimApk implements Closeable {
 		}
 	}
 	
-	public static void debug(String msg) {
-		System.out.println(msg);
-		System.exit(1);
+	public String getConfig() {
+		return "Input: " + input.toString() + "\nOutput: " + output.toString() +
+				 "\nArch: " + Options.getType();
 	}
 
 	@Override
 	public void close() throws IOException {
 		temp.toFile().deleteOnExit();
-		System.out.println("bye-bye;)");
+		System.out.println("Done.");
 	}
 }
