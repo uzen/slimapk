@@ -59,8 +59,10 @@ public class SlimApk implements Closeable {
 		}
 		Options.setABI(abi);
 	}
+	
 	private void unzipApk(Path apk) throws IOException {
 		Path[] path = createWorkplace(apk);
+		Path readyApp = null;
 		/*
 		 path[0]: current apk file(tmp)
 		 path[1]: output apk file
@@ -72,7 +74,7 @@ public class SlimApk implements Closeable {
 			final Path root = ApkFileSystem.getPath("/");
 			String ApkName, pattern = Options.getPattern();
 
-			if (pattern != null) {
+			if (pattern != null || true) {
 				ApkName = getNameApk(new FileNameParser(pattern), path[0]);
 			} else {
 				ApkName = getNameApk(new FileXMLParser(), root);
@@ -80,18 +82,16 @@ public class SlimApk implements Closeable {
 
 			path[1] = path[1].resolveSibling(ApkName);
 			if (Files.exists(path[1])) deleteDirectories(path[1]);
-			Files.createDirectories(path[1]);
-			extractLibrary(root, path[1]);
-			path[1] = path[1].resolve(ApkName + ".apk");
-		} finally {
-			try {
-				Files.move(path[0], path[1]);
-				System.out.printf("save: %s\n", path[1].toString());
-			} catch (IOException e) {
-				deleteDirectories(path[1]);
-				e.printStackTrace();
-			}
+			Files.createDirectories(path[1]);			
+			extractLibrary(root, path[1]);			
+			readyApp = path[1].resolve(ApkName + ".apk");
+		} catch(IOException e) {
+			System.err.println(e.getMessage());
+			deleteDirectories(path[1]);
+			return;
 		}
+		Files.move(path[0], readyApp);
+		System.out.printf("save: %s\n", readyApp.toString());
 	}
 
 	/* get Name Apk of androidmanifest.xml or File Name */
@@ -130,15 +130,18 @@ public class SlimApk implements Closeable {
 
 	private void extractLibrary(Path root, Path outPath) throws IOException {
 		final Path libdir = root.resolve(AndroidConstants.LIB_PREFIX);
-
 		outPath = outPath.resolve(AndroidConstants.LIB_DIR);
-		if (parseLibrary(libdir, outPath)) deleteDirectories(libdir);
+		if(Files.exists(libdir)){
+			if(parseLibrary(libdir, outPath)){
+				deleteDirectories(libdir);
+			} else throw new IOException("Incorrect application architecture");
+		}
 	}
+	
+	private boolean parseLibrary(Path libdir, Path outPath) throws IOException {
 
-	private boolean parseLibrary(Path root, Path outPath) throws IOException {
-
-		final Path curPath = root.resolve(Options.getABI());
-		final Path defPath = root.resolve(AndroidConstants.ABI_ARM);
+		final Path curPath = libdir.resolve(Options.getABI());
+		final Path defPath = libdir.resolve(AndroidConstants.ABI_ARM);
 		final Path dirPath = (Files.exists(curPath)) ? curPath : (Files.exists(defPath)) ? defPath : null;
 
 		if (dirPath == null) return false;
