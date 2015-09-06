@@ -9,10 +9,10 @@ class App {
     public static void main(String[] args) throws IOException {
         String[] path = new String[2];
         ApkOptions opt = parseArgs(args, path);
-                			System.out.println(path[0]);
+                		
         if(opt != null && path[0] != null) 
         try (SlimApk apk = new SlimApk(path[0], path[1], opt)) {
-        		System.out.println("#SlimApk\n" + apk.getConfig());
+            System.out.println("#SlimApk\n" + apk.getConfig());
             apk.parseDirectories();
         }
     }
@@ -20,28 +20,28 @@ class App {
     private static ApkOptions parseArgs(final String[] args, String[] path) {
     	
         if (args.length < 1) {
-        		System.out.println(getSupport());
-        		return null;
+            System.out.println(getSupport());
+            return null;
         }
 
         String type = "arm", pattern = null;
         Boolean keepDir = false, cleanMode = false;
         
         for(int i=0; i < args.length; i++){
-        		if(!args[i].startsWith("-")){
-        			if(path[0] == null){
-        				path[0] = args[i];
-        			} else if(path[1] == null)
-        				path[1] = args[i];
-        			continue;
-        		}
+              if(!args[i].startsWith("-")){
+        	if(path[0] == null){
+        	 path[0] = args[i];
+        	} else if(path[1] == null)
+        	 path[1] = args[i];
+        	continue;
+              }
         		
-        		if(args[i].startsWith("-p=")){
-        			pattern = args[i].replaceFirst("-p=","");
-        			continue;
-        		}
+         if(args[i].startsWith("-p=")){
+        	pattern = args[i].replaceFirst("-p=","");
+        	continue;
+         }
         			 
-         	switch (args[i]){
+          switch (args[i]){
                case "-a32": case "--arm":
                    type = "arm";
                    break;
@@ -59,7 +59,7 @@ class App {
                   return null;
                default:
                	System.out.println("Invalid argument: " +args[i]);
-         	}   
+         }   
         }
         
         //remove after:
