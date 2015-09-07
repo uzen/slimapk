@@ -1,99 +1,79 @@
 package com.uzen.slimapk.parser;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Files;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.cert.CertificateException;
 import java.util.*;
 
-/*
-import com.uzen.slimapk.bean.*;
-import com.uzen.slimapk.exception.ParserException;
+import com.uzen.slimapk.struct.ApkMeta;
 import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.struct.resource.ResourceTable;
-import com.uzen.slimapk.utils.Utils;
+import com.uzen.slimapk.struct.exception.ParserException;
 import com.uzen.slimapk.parser.*;
-*/
+import com.uzen.slimapk.utils.Utils;
 
 public class FileXMLParser implements NameParser {
-	
 	private Path root;
-	/*
 	private ResourceTable resourceTable;
-	private Set<Locale> locales;
-	private Locale preferredLocale = Locale.US;
 	private ApkMeta apkMeta;
-	*/
+	private Locale locale = Locale.US;
+	
 	public void setName(Path root){
 		this.root = root; 
 	};
 	
 	public void parseData(){
-		/*
-   	Path manifestXml = root.resolve(AndroidConstants.MANIFEST_FILE);
+		Path manifestXml = root.resolve(AndroidConstants.MANIFEST_FILE);
 		XmlTranslator xmlTranslator = new XmlTranslator();
 		ApkMetaTranslator translator = new ApkMetaTranslator();
 		XmlStreamer xmlStreamer = new CompositeXmlStreamer(xmlTranslator, translator);
 		try{
 			transBinaryXml(manifestXml, xmlStreamer);
-		} catch(IOException e){
-		
+		} catch(IOException e) {
+			e.printStackTrace();
 		}
-		String manifest = xmlTranslator.getXml();
-		if (manifest == null) {
-        throw new ParserException("manifest xml not exists");
-      }
+		if (xmlTranslator.getXml() == null)
+      	throw new ParserException("manifest xml not exists");
       this.apkMeta = translator.getApkMeta();
-      */
    };
-   
-   
-	 /*private void transBinaryXml(Path manifestXml, XmlStreamer xmlStreamer) throws IOException {
+
+   private void transBinaryXml(Path manifestXml, XmlStreamer xmlStreamer) throws IOException {
+        if (this.resourceTable == null) {
+            parseResourceTable();
+        }
+        
+        InputStream in = Files.newInputStream(manifestXml);
+        ByteBuffer buffer = ByteBuffer.wrap(Utils.toByteArray(in));
+        BinaryXmlParser binaryXmlParser = new BinaryXmlParser(buffer, resourceTable);
+        binaryXmlParser.setLocale(locale);
+        binaryXmlParser.setXmlStreamer(xmlStreamer);
+        binaryXmlParser.parse();
+    }
     
-     if (this.resourceTable == null) {
-         parseResourceTable();
-     }
-     
-     InputStream in = Files.newInputStream(manifestXml);
-     ByteBuffer buffer = ByteBuffer.wrap(Utils.toByteArray(in));
-     BinaryXmlParser binaryXmlParser = new BinaryXmlParser(buffer, resourceTable);
-     binaryXmlParser.setLocale(preferredLocale);
-     binaryXmlParser.setXmlStreamer(xmlStreamer);
-     binaryXmlParser.parse();
-     
-	}*/
-     
-	private void parseResourceTable() throws IOException {
-	/*
-     Path entry = root.resolve(AndroidConstants.RESOURCE_FILE);
-     if (Files.notExists(entry)) {
-         // if no resource entry has been found, we assume it is not needed by this APK
-         this.resourceTable = new ResourceTable();
-         this.locales = Collections.emptySet();
-         return;
-     }
+    private void parseResourceTable() throws IOException {
+        Path entry = root.resolve(AndroidConstants.RESOURCE_FILE);
+        if (Files.notExists(entry)) {
+            this.resourceTable = new ResourceTable();
+            return;
+        }
 
-     this.resourceTable = new ResourceTable();
-     this.locales = Collections.emptySet();
+        this.resourceTable = new ResourceTable();
 
-     InputStream in = Files.newInputStream(entry);
-     ByteBuffer buffer = ByteBuffer.wrap(Utils.toByteArray(in));
-     ResourceTableParser resourceTableParser = new ResourceTableParser(buffer);
-     resourceTableParser.parse();
-     this.resourceTable = resourceTableParser.getResourceTable();
-     this.locales = resourceTableParser.getLocales();
-   */
-	}
-   
-   
-	public String getName() {
-		return null; //apkMeta.getName();
+        InputStream in = Files.newInputStream(entry);
+        ByteBuffer buffer = ByteBuffer.wrap(Utils.toByteArray(in));
+        ResourceTableParser resourceTableParser = new ResourceTableParser(buffer);
+        resourceTableParser.parse();
+        this.resourceTable = resourceTableParser.getResourceTable();
+    }
+    
+   public String getName(){
+		return apkMeta.getName();
 	};
-
-   
-   public String getVersion() {
-   	return null; //apkMeta.getVersionName();
-   };   
+	
+	public String getVersion(){
+		return apkMeta.getVersionName();
+	};
 }
