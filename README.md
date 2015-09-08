@@ -1,6 +1,6 @@
 <pre>
 
-Usage: slimapk [options...] <INPUT_FOLDER/FILE> <OUTPUT_FOLDER>
+Usage: slimapk [options...] <&ampINPUT_FOLDER/FILE> <&ampOUTPUT_FOLDER>
 
 options:
  -a32 (--arm) - ARM
