@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Implementation-Title: SlimApk
-Implementation-Version: 1.0.6
-Created-By: 1.7.0_85 (Oracle Corporation)
-Main-Class: com.uzen.slimapk.App
-
