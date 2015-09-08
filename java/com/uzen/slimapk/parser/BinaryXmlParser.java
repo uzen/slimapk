@@ -177,7 +177,7 @@ public class BinaryXmlParser {
 
         return xmlNodeStartTag;
     }
-
+    
     private Attribute readAttribute() {
         int nsRef = buffer.getInt();
         int nameRef = buffer.getInt();
