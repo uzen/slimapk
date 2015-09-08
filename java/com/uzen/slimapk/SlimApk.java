@@ -24,6 +24,8 @@ public class SlimApk implements Closeable {
 	private ApkOptions Options;
 	private Path input, output, temp;
 	private static final StandardCopyOption copyOption = StandardCopyOption.COPY_ATTRIBUTES;
+	
+	//private Map<String, String> List;
 
 	public SlimApk(String input, String output, ApkOptions Options) throws IOException {
 		if (output == null) output = System.getProperty("user.dir");
@@ -67,9 +69,10 @@ public class SlimApk implements Closeable {
 		 path[0]: current apk file(tmp)
 		 path[1]: output apk file
 		*/
-		Map < String, String > env = new HashMap < > ();
+		Map<String, String> env = new HashMap<>();
 
-		URI uri = URI.create("jar:file:" + path[0].toAbsolutePath());
+		String encodePath = path[0].toString().replaceAll(" ", "%20");	
+		URI uri = URI.create("jar:file:" + encodePath);
 
 		try (FileSystem ApkFileSystem = FileSystems.newFileSystem(uri, env)) {
 			final Path root = ApkFileSystem.getPath("/");
