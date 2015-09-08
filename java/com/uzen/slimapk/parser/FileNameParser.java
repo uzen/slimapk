@@ -1,13 +1,16 @@
 package com.uzen.slimapk.parser;
 
 import java.util.regex.*;
-import java.nio.file.*;
+import java.nio.file.Path;
 import java.io.IOException;
 
+import com.uzen.slimapk.struct.ApkMeta;
+
 public class FileNameParser implements NameParser {
-	private String name;
+	private Path file;
 	// default tempale
 	private String patt;
+	private ApkMeta apkMeta;
 	
 	public FileNameParser(String spatt) {	
 		if(spatt == null || spatt.isEmpty()){
@@ -16,10 +19,11 @@ public class FileNameParser implements NameParser {
 	}
 	
 	public void setName(Path file) {
-		this.name = file.getFileName().toString();
+		this.file = file;
 	}
 	
 	public void parseData() {
+		String name = file.getFileName().toString();
 		try{
 			Pattern pattern = Pattern.compile(patt, Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(name);
@@ -33,17 +37,12 @@ public class FileNameParser implements NameParser {
 		
 		name = name.toLowerCase();
 		name = name.substring(0, 1).toUpperCase() + name.substring(1);
+		
+		apkMeta.setLabel(name);
+		apkMeta.setVersionName(null);
 	}
 	
-	public String getPattern() {
-		return this.patt;
-	}
-	
-	public String getName() {
-		return this.name;
-	}
-	
-	public String getVersion() {
-		return null;
+	public ApkMeta getMeta() {
+		return this.apkMeta;
 	}
 }

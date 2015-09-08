@@ -69,11 +69,7 @@ public class FileXMLParser implements NameParser {
         this.resourceTable = resourceTableParser.getResourceTable();
     }
     
-   public String getName(){
-		return apkMeta.getName();
-	};
-	
-	public String getVersion(){
-		return apkMeta.getVersionName();
+   public ApkMeta getMeta(){
+		return apkMeta;
 	};
 }

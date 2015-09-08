@@ -1,6 +1,7 @@
 package com.uzen.slimapk.parser;
 
 import java.nio.file.Path; 
+import com.uzen.slimapk.struct.ApkMeta;
 
 public interface NameParser {
 
@@ -8,8 +9,6 @@ public interface NameParser {
 	
    void parseData();
 		
-	String getName();
-	
-	String getVersion();
+	ApkMeta getMeta();
 
 }	
