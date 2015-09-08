@@ -12,6 +12,7 @@ import java.net.URI;
 import java.io.IOException;
 import java.io.Closeable;
 
+import com.uzen.slimapk.struct.ApkMeta;
 import com.uzen.slimapk.parser.NameParser;
 import com.uzen.slimapk.parser.FileNameParser;
 import com.uzen.slimapk.parser.FileXMLParser;
@@ -25,7 +26,7 @@ public class SlimApk implements Closeable {
 	private Path input, output, temp;
 	private static final StandardCopyOption copyOption = StandardCopyOption.COPY_ATTRIBUTES;
 	
-	//private Map<String, String> List;
+	private Map<String, String> List; //list of applications with versions
 
 	public SlimApk(String input, String output, ApkOptions Options) throws IOException {
 		if (output == null) output = System.getProperty("user.dir");
@@ -34,6 +35,7 @@ public class SlimApk implements Closeable {
 		this.output = FileSystems.getDefault().getPath(output);
 		createWorkingDir();
 		setType();
+		initListFiles();
 	}
 
 	private void createWorkingDir() throws IOException {
@@ -63,25 +65,31 @@ public class SlimApk implements Closeable {
 		Options.setABI(abi);
 	}
 
+	private void initListFiles() {
+		if(Options.getFilesList() != null) {	
+			List = new HashMap<String, String>();
+		}
+	}
+
 	private void unzipApk(Path apk) throws IOException {
 		Path[] path = createWorkplace(apk);
 		/*
 		 path[0]: current apk file(tmp)
 		 path[1]: output apk file
 		*/
-		Map<String, String> env = new HashMap<>();
+		Map<String, String> env = new HashMap<String, String>();
 
 		String encodePath = path[0].toString().replaceAll(" ", "%20");	
 		URI uri = URI.create("jar:file:" + encodePath);
 
 		try (FileSystem ApkFileSystem = FileSystems.newFileSystem(uri, env)) {
 			final Path root = ApkFileSystem.getPath("/");
-			String ApkName = getNameApk(Options.getPattern(), root, path[0]);
+			String ApkName = getNameApk(Options.getPattern(), root, path[0], List);
 			path[1] = path[1].resolveSibling(ApkName);
 			if (Files.exists(path[1])) deleteDirectories(path[1]);
 			Files.createDirectories(path[1]);
 			extractLibrary(root, path[1]);
-			apk = path[1].resolve(ApkName + ".apk");
+			apk = path[1].resolve(ApkName + AndroidConstants.EXTENSION);
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 			deleteDirectories(path[1]);
@@ -92,25 +100,32 @@ public class SlimApk implements Closeable {
 	}
 
 	/* get Name Apk of androidmanifest.xml or File Name */
-	private static String getNameApk(String pattern, Path root, Path path) {
+	private static String getNameApk(String pattern, Path root, Path path, Map<String,String> list) {
 
-		NameParser ApkName;
+		NameParser apkName;
 
 		if (pattern != null) {
-			ApkName = new FileNameParser(pattern);
-			ApkName.setName(path);
+			apkName = new FileNameParser(pattern);
+			apkName.setName(path);
 		} else {
-			ApkName = new FileXMLParser();
-			ApkName.setName(root);
+			apkName = new FileXMLParser();
+			apkName.setName(root);
 		}
 
-		ApkName.parseData();
-		String name = ApkName.getName();
+		apkName.parseData();
+		
+		ApkMeta apkMeta = apkName.getMeta();
+		String name = apkMeta.getName(),
+			version = apkMeta.getVersionName();
+			
 		if (name == null) {
 			name = path.getFileName().toString();
 		}
-		//if(list != null)
-		//list.put(name, ApkName.getVersion());
+		
+		if(list != null) {
+			list.put(name, version);
+		}
+		
 		return name;
 	}
 
@@ -186,6 +201,12 @@ public class SlimApk implements Closeable {
 		Files.walkFileTree(dir, ApkLibDelParser);
 	}
 
+	private void writeListToFile(Map<String,String> list) {
+		if(list == null) return;
+		Path file = FileSystems.getDefault().getPath(Options.getFilesList());
+		//coming soon
+	}
+	
 	public void parseDirectories() {
 		try {
 			ApkFileVisitor ApkParser = new ApkFileVisitor() {
@@ -196,7 +217,7 @@ public class SlimApk implements Closeable {
 					if (c > 4) {
 						name = name.substring(c - 4, c).toLowerCase();
 						try {
-							if (name.equals(".apk")) unzipApk(file);
+							if (name.equals(AndroidConstants.EXTENSION)) unzipApk(file);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -217,6 +238,7 @@ public class SlimApk implements Closeable {
 	@Override
 	public void close() throws IOException {
 		temp.toFile().deleteOnExit();
+		writeListToFile(List);
 		System.out.println("Done.");
 	}
 }

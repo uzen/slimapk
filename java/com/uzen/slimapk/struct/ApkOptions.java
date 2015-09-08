@@ -5,12 +5,14 @@ public class ApkOptions {
 
     private final String type;
     private final String pattern;
+    private final String pathToFilesList;
     private final Boolean keepMode;
     private final Boolean cleanMode;
     
-    public ApkOptions(String type, String pattern, Boolean keepMode, Boolean cleanMode) {
+    public ApkOptions(String type, String pattern, String pathToFilesList, Boolean keepMode, Boolean cleanMode) {
         this.type = type;
-        this.pattern = pattern;
+        this.pattern = pattern;        
+        this.pathToFilesList = pathToFilesList;
         this.keepMode = keepMode;
         this.cleanMode = cleanMode;
     }
@@ -29,6 +31,10 @@ public class ApkOptions {
     
     public String getPattern() {
         return pattern;
+    }
+
+    public String getFilesList() {
+        return pathToFilesList;
     }
 
     public Boolean getCleanMode() {

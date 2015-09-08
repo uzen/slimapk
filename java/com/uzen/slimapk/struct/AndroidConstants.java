@@ -12,7 +12,7 @@ public class AndroidConstants {
 	public static final String ABI_ARMv7 = "armeabi-v7a";
 	public static final String ABI_ARMv8 = "arm64-v8a";
 	public static final String ABI_X86 = "x86";
-
+	public static final String EXTENSION = ".apk";
    /**
     * the binary xml file used system attr id.
     */
