@@ -24,7 +24,7 @@ class App {
 		}
 
 		String type = "arm", pattern = null;
-		Boolean keepDir = false, cleanMode = false;
+		Boolean keepDir = false;
 
 		for (int i = 0; i < args.length; i++) {
 			if (!args[i].startsWith("-")) {
@@ -60,11 +60,7 @@ class App {
 			}
 		}
 
-		//remove after:
-		cleanMode = null; //(new func.)cleaning whole apk of extra libraries
-		/*------------*/
-
-		return new ApkOptions(type, pattern, keepDir, cleanMode);
+		return new ApkOptions(type, pattern, null, keepDir, null);
 	}
 
 	private static String getImplementation() {
