@@ -20,9 +20,7 @@
     </target>
     <target name="build" depends="compile">
         <jar destfile="slimapk.jar"
-         	basedir="${bin.dir}"
-         	excludes="**/*.jar">
-            <fileset file="${resource.dir}/*"/>
+         	basedir="${bin.dir}">
             <manifest>
                 <attribute name="Implementation-Title" value="SlimApk" />
                 <attribute name="Implementation-Version" value="1.0.6" />

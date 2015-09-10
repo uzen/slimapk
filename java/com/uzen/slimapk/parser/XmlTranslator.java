@@ -85,24 +85,6 @@ public class XmlTranslator implements XmlStreamer {
         isLastStartTag = false;
     }
 
-
-    @Override
-    public void onCData(XmlCData xmlCData) {
-        appendShift(shift);
-        sb.append(xmlCData.getValue()).append('\n');
-        isLastStartTag = false;
-    }
-
-    @Override
-    public void onNamespaceStart(XmlNamespaceStartTag tag) {
-        this.namespaces.addNamespace(tag);
-    }
-
-    @Override
-    public void onNamespaceEnd(XmlNamespaceEndTag tag) {
-        this.namespaces.removeNamespace(tag);
-    }
-
     private void appendShift(int shift) {
         for (int i = 0; i < shift; i++) {
             sb.append("\t");

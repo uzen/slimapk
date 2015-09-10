@@ -2,10 +2,9 @@ package com.uzen.slimapk.parser;
 
 import java.nio.file.Path;
 import java.nio.file.Files;
+import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.security.cert.CertificateException;
 import java.util.*;
 
 import com.uzen.slimapk.struct.ApkMeta;

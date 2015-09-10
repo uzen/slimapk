@@ -1,7 +1,6 @@
 package com.uzen.slimapk.struct.resource;
 
 import com.uzen.slimapk.struct.StringPool;
-import com.uzen.slimapk.utils.ResourceLoader;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,8 +1,5 @@
 package com.uzen.slimapk.parser;
 
-import com.uzen.slimapk.struct.xml.XmlNamespaceEndTag;
-import com.uzen.slimapk.struct.xml.XmlNamespaceStartTag;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,18 +18,6 @@ class XmlNamespaces {
     public XmlNamespaces() {
         this.namespaces = new ArrayList<>();
         this.newNamespaces = new ArrayList<>();
-    }
-
-    public void addNamespace(XmlNamespaceStartTag tag) {
-        XmlNamespace namespace = new XmlNamespace(tag.getPrefix(), tag.getUri());
-        namespaces.add(namespace);
-        newNamespaces.add(namespace);
-    }
-
-    public void removeNamespace(XmlNamespaceEndTag tag) {
-        XmlNamespace namespace = new XmlNamespace(tag.getPrefix(), tag.getUri());
-        namespaces.remove(namespace);
-        newNamespaces.remove(namespace);
     }
 
     public String getPrefixViaUri(String uri) {

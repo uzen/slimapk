@@ -26,25 +26,4 @@ public class CompositeXmlStreamer implements XmlStreamer {
             xmlStreamer.onEndTag(xmlNodeEndTag);
         }
     }
-
-    @Override
-    public void onCData(XmlCData xmlCData) {
-        for (XmlStreamer xmlStreamer : xmlStreamers) {
-            xmlStreamer.onCData(xmlCData);
-        }
-    }
-
-    @Override
-    public void onNamespaceStart(XmlNamespaceStartTag tag) {
-        for (XmlStreamer xmlStreamer : xmlStreamers) {
-            xmlStreamer.onNamespaceStart(tag);
-        }
-    }
-
-    @Override
-    public void onNamespaceEnd(XmlNamespaceEndTag tag) {
-        for (XmlStreamer xmlStreamer : xmlStreamers) {
-            xmlStreamer.onNamespaceEnd(tag);
-        }
-    }
 }

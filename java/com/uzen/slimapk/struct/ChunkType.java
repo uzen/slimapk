@@ -15,7 +15,6 @@ public class ChunkType {
     public static final int XML_END_NAMESPACE = 0x0101;
     public static final int XML_START_ELEMENT = 0x0102;
     public static final int XML_END_ELEMENT = 0x0103;
-    public static final int XML_CDATA = 0x0104;
     public static final int XML_LAST_CHUNK = 0x017f;
     // This contains a uint32_t array mapping strings in the string
     // pool back to resource identifiers.  It is optional.

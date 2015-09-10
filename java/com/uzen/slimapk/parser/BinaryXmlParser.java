@@ -6,14 +6,10 @@ import com.uzen.slimapk.struct.resource.ResourceTable;
 import com.uzen.slimapk.struct.xml.*;
 import com.uzen.slimapk.utils.Buffers;
 import com.uzen.slimapk.utils.ParseUtils;
-import com.uzen.slimapk.utils.Utils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * Android Binary XML format
@@ -30,7 +26,6 @@ public class BinaryXmlParser {
     private ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;
     private StringPool stringPool;
     // some attribute name stored by resource id
-    private String[] resourceMap;
     private ByteBuffer buffer;
     private XmlStreamer xmlStreamer;
     private final ResourceTable resourceTable;
@@ -66,65 +61,30 @@ public class BinaryXmlParser {
         }
         ParseUtils.checkChunkType(ChunkType.STRING_POOL, chunkHeader.getChunkType());
         stringPool = ParseUtils.readStringPool(buffer, (StringPoolHeader) chunkHeader);
-
-        // read on chunk, check if it was an optional XMLResourceMap chunk
+       	
         chunkHeader = readChunkHeader();
-        if (chunkHeader == null) {
-            return;
-        }
-        if (chunkHeader.getChunkType() == ChunkType.XML_RESOURCE_MAP) {
-            long[] resourceIds = readXmlResourceMap((XmlResourceMapHeader) chunkHeader);
-            resourceMap = new String[resourceIds.length];
-            for (int i = 0; i < resourceIds.length; i++) {
-                resourceMap[i] = Attribute.AttrIds.getString(resourceIds[i]);
-            }
-            chunkHeader = readChunkHeader();
-        }
 
         while (chunkHeader != null) {
-                /*if (chunkHeader.chunkType == ChunkType.XML_END_NAMESPACE) {
-                    break;
-                }*/
             long beginPos = buffer.position();
             switch (chunkHeader.getChunkType()) {
-                case ChunkType.XML_END_NAMESPACE:
-                    XmlNamespaceEndTag xmlNamespaceEndTag = readXmlNamespaceEndTag();
-                    xmlStreamer.onNamespaceEnd(xmlNamespaceEndTag);
-                    break;
-                case ChunkType.XML_START_NAMESPACE:
-                    XmlNamespaceStartTag namespaceStartTag = readXmlNamespaceStartTag();
-                    xmlStreamer.onNamespaceStart(namespaceStartTag);
-                    break;
                 case ChunkType.XML_START_ELEMENT:
                     XmlNodeStartTag xmlNodeStartTag = readXmlNodeStartTag();
                     break;
                 case ChunkType.XML_END_ELEMENT:
                     XmlNodeEndTag xmlNodeEndTag = readXmlNodeEndTag();
                     break;
-                case ChunkType.XML_CDATA:
-                    XmlCData xmlCData = readXmlCData();
-                    break;
+                
                 default:
                     if (chunkHeader.getChunkType() >= ChunkType.XML_FIRST_CHUNK &&
-                            chunkHeader.getChunkType() <= ChunkType.XML_LAST_CHUNK) {
+                            chunkHeader.getChunkType() <= ChunkType.XML_RESOURCE_MAP) {
                         Buffers.skip(buffer, chunkHeader.getBodySize());
                     } else {
-                        throw new ParserException("Unexpected chunk type:" + chunkHeader.getChunkType());
+                    		throw new ParserException("Unexpected chunk:" + chunkHeader.getChunkType());
                     }
             }
             buffer.position((int) (beginPos + chunkHeader.getBodySize()));
             chunkHeader = readChunkHeader();
         }
-    }
-
-    private XmlCData readXmlCData() {
-        XmlCData xmlCData = new XmlCData();
-        int dataRef = buffer.getInt();
-        if (dataRef > 0) {
-            xmlCData.setData(stringPool.get(dataRef));
-        }
-        xmlCData.setTypedData(ParseUtils.readResValue(buffer, stringPool));
-        return xmlCData;
     }
 
     private XmlNodeEndTag readXmlNodeEndTag() {
@@ -187,11 +147,6 @@ public class BinaryXmlParser {
         }
 
         attribute.setName(stringPool.get(nameRef));
-        if (attribute.getName().isEmpty() && resourceMap != null && nameRef < resourceMap.length) {
-            // some processed apk file make the string pool value empty, if it is a xmlmap attr.
-            attribute.setName(resourceMap[nameRef]);
-            //TODO: how to get the namespace of attribute
-        }
 
         int rawValueRef = buffer.getInt();
         if (rawValueRef > 0) {
@@ -202,42 +157,6 @@ public class BinaryXmlParser {
 
         return attribute;
     }
-
-    private XmlNamespaceStartTag readXmlNamespaceStartTag() {
-        int prefixRef = buffer.getInt();
-        int uriRef = buffer.getInt();
-        XmlNamespaceStartTag nameSpace = new XmlNamespaceStartTag();
-        if (prefixRef > 0) {
-            nameSpace.setPrefix(stringPool.get(prefixRef));
-        }
-        if (uriRef > 0) {
-            nameSpace.setUri(stringPool.get(uriRef));
-        }
-        return nameSpace;
-    }
-
-    private XmlNamespaceEndTag readXmlNamespaceEndTag() {
-        int prefixRef = buffer.getInt();
-        int uriRef = buffer.getInt();
-        XmlNamespaceEndTag nameSpace = new XmlNamespaceEndTag();
-        if (prefixRef > 0) {
-            nameSpace.setPrefix(stringPool.get(prefixRef));
-        }
-        if (uriRef > 0) {
-            nameSpace.setUri(stringPool.get(uriRef));
-        }
-        return nameSpace;
-    }
-
-    private long[] readXmlResourceMap(XmlResourceMapHeader chunkHeader) {
-        int count = chunkHeader.getBodySize() / 4;
-        long[] resourceIds = new long[count];
-        for (int i = 0; i < count; i++) {
-            resourceIds[i] = Buffers.readUInt(buffer);
-        }
-        return resourceIds;
-    }
-
 
     private ChunkHeader readChunkHeader() {
         // finished
@@ -262,24 +181,23 @@ public class BinaryXmlParser {
                 stringPoolHeader.setStylesStart(Buffers.readUInt(buffer));
                 buffer.position((int) (begin + headerSize));
                 return stringPoolHeader;
-            case ChunkType.XML_RESOURCE_MAP:
-                buffer.position((int) (begin + headerSize));
-                return new XmlResourceMapHeader(chunkType, headerSize, chunkSize);
-            case ChunkType.XML_START_NAMESPACE:
-            case ChunkType.XML_END_NAMESPACE:
             case ChunkType.XML_START_ELEMENT:
             case ChunkType.XML_END_ELEMENT:
-            case ChunkType.XML_CDATA:
                 XmlNodeHeader header = new XmlNodeHeader(chunkType, headerSize, chunkSize);
                 header.setLineNum((int) Buffers.readUInt(buffer));
                 header.setCommentRef((int) Buffers.readUInt(buffer));
                 buffer.position((int) (begin + headerSize));
                 return header;
+            case ChunkType.XML_START_NAMESPACE:
+            case ChunkType.XML_END_NAMESPACE:
+            case ChunkType.XML_RESOURCE_MAP:
+                buffer.position((int) (begin + headerSize));
+                return new XmlNodeHeaderNull(chunkType, headerSize, chunkSize);
             case ChunkType.NULL:
-                //buffer.advanceTo(begin + headerSize);
-                //buffer.skip((int) (chunkSize - headerSize));
             default:
                 throw new ParserException("Unexpected chunk type:" + chunkType);
+                
+                
         }
     }
 

@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.io.IOException;
 
 import com.uzen.slimapk.struct.ApkMeta;
+import com.uzen.slimapk.struct.exception.ParserException;
 
 public class FileNameParser implements NameParser {
 	private Path file;
@@ -32,7 +33,7 @@ public class FileNameParser implements NameParser {
 				name = matcher.group(1);
 			};
 		} catch (PatternSyntaxException e) {
-			System.out.printf("Invalid regular expression: %s\n", e.getMessage());
+			throw new ParserException("Invalid regular expression: %s\n" + e.getMessage());
 		} 
 		
 		name = name.toLowerCase();

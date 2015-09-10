@@ -37,21 +37,6 @@ public class ApkMetaTranslator implements XmlStreamer {
         depth--;
     }
 
-    @Override
-    public void onCData(XmlCData xmlCData) {
-
-    }
-
-    @Override
-    public void onNamespaceStart(XmlNamespaceStartTag tag) {
-
-    }
-
-    @Override
-    public void onNamespaceEnd(XmlNamespaceEndTag tag) {
-
-    }
-
     public ApkMeta getApkMeta() {
         return apkMeta;
     }

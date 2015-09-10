@@ -2,7 +2,6 @@ package com.uzen.slimapk.struct.xml;
 
 import com.uzen.slimapk.struct.ResourceEntity;
 import com.uzen.slimapk.struct.resource.ResourceTable;
-import com.uzen.slimapk.utils.ResourceLoader;
 
 import java.util.Locale;
 import java.util.Map;
@@ -31,25 +30,6 @@ public class Attribute {
             // something happen;
             return "";
         }
-    }
-
-    /**
-     * These are attribute resource constants for the platform; as found in android.R.attr
-     *
-     * @author dongliu
-     */
-    public static class AttrIds {
-
-        private static final Map<Integer, String> ids = ResourceLoader.loadSystemAttrIds();
-
-        public static String getString(long id) {
-            String value = ids.get((int) id);
-            if (value == null) {
-                value = "AttrId:0x" + Long.toHexString(id);
-            }
-            return value;
-        }
-
     }
 
     public String getNamespace() {
