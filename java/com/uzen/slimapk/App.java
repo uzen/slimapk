@@ -23,7 +23,7 @@ class App {
 			return null;
 		}
 
-		String type = "arm", pattern = null;
+		String type = "arm", pattern = null, pathToFilesList = null;
 		Boolean keepDir = false;
 
 		for (int i = 0; i < args.length; i++) {
@@ -37,8 +37,11 @@ class App {
 			if (args[i].startsWith("-p=")) {
 				pattern = args[i].replaceFirst("-p=", "");
 				continue;
+			} else if (args[i].startsWith("-l=")) {
+				pathToFilesList = args[i].replaceFirst("-l=", "");
+				continue;
 			}
-
+			
 			switch (args[i]) {
 				case "-a32": case "--arm":
 					type = "arm";
@@ -60,7 +63,7 @@ class App {
 			}
 		}
 
-		return new ApkOptions(type, pattern, null, keepDir, null);
+		return new ApkOptions(type, pattern, pathToFilesList, keepDir);
 	}
 
 	private static String getImplementation() {
@@ -69,6 +72,6 @@ class App {
 	}
 
 	private static String getSupport() {
-		return "\nUsage: slimapk [options...] <INPUT_FOLDER/FILE> <OUTPUT_FOLDER>\n\n" + "options:\n" + " -a32 (--arm) - ARM\n" + " -a64 (--arm64) - ARM 64-bit\n" + " -x86 (--x86) - X86\n" + " -k (--keep-directory) keep the structure the f/s\n" + " -p [-p=\"template for the file name\"]\n" + " -h (--help) - help\n" + "\nver. " + getImplementation() + "\n";
+		return "\nUsage: slimapk [options...] <INPUT_FOLDER/FILE> <OUTPUT_FOLDER>\n\n" + "options:\n" + " -a32 (--arm) - ARM\n" + " -a64 (--arm64) - ARM 64-bit\n" + " -x86 (--x86) - X86\n" + " -k (--keep-directory) keep the structure the f/s\n" + " -p [-p=\"template for the file name\"]\n" + " -l [-l=\"path to save the list of applications\"]\n" + " -h (--help) - help\n" + "\nver. " + getImplementation() + "\n";
 	}
 }

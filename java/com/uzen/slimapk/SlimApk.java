@@ -67,7 +67,7 @@ public class SlimApk implements Closeable {
 
 	private void initListFiles() {
 		if(Options.getFilesList() != null) {	
-			List = new HashMap<String, String>();
+			List = new HashMap<>();
 		}
 	}
 
@@ -77,21 +77,24 @@ public class SlimApk implements Closeable {
 		 path[0]: current apk file(tmp)
 		 path[1]: output apk file
 		*/
-		Map<String, String> env = new HashMap<String, String>();
-
+		Map<String, String> env = new HashMap<>();
+		env.put("encoding", "UTF-8");
+		
+		/* replace spaces in directory names */
+		
 		String encodePath = path[0].toString().replaceAll(" ", "%20");	
 		URI uri = URI.create("jar:file:" + encodePath);
-
+		
 		try (FileSystem ApkFileSystem = FileSystems.newFileSystem(uri, env)) {
 			final Path root = ApkFileSystem.getPath("/");
-			String ApkName = getNameApk(Options.getPattern(), root, path[0], List);
-			path[1] = path[1].resolveSibling(ApkName);
-			if (Files.exists(path[1])) deleteDirectories(path[1]);
+			String apkName = getNameApk(Options.getPattern(), root, path[0], List);
+			
+			path[1] = path[1].resolveSibling(apkName);
+			deleteDirectories(path[1]);
 			Files.createDirectories(path[1]);
 			extractLibrary(root, path[1]);
-			apk = path[1].resolve(ApkName + AndroidConstants.EXTENSION);
+			apk = path[1].resolve(apkName + AndroidConstants.EXTENSION);
 		} catch (IOException e) {
-			System.err.println(e.getMessage());
 			deleteDirectories(path[1]);
 			return;
 		}
@@ -198,12 +201,24 @@ public class SlimApk implements Closeable {
 				}
 			}
 		};
-		Files.walkFileTree(dir, ApkLibDelParser);
+		if (Files.exists(dir)) {
+			Files.walkFileTree(dir, ApkLibDelParser);
+		}
 	}
 
-	private void writeListToFile(Map<String,String> list) {
-		if(list == null) return;
+	private void writeToListFile() throws IOException {
+		if(List == null) return;
+		
 		Path file = FileSystems.getDefault().getPath(Options.getFilesList());
+		
+		for(Map.Entry<String,String> m :List.entrySet()){
+            System.out.println(m.getKey()+" : "+m.getValue());
+      }
+		
+		if (Files.notExists(file)) {
+			throw new IOException("It's not possible to create file: " + file.toString());
+		}
+
 		//coming soon
 	}
 	
@@ -238,7 +253,7 @@ public class SlimApk implements Closeable {
 	@Override
 	public void close() throws IOException {
 		temp.toFile().deleteOnExit();
-		writeListToFile(List);
+		writeToListFile();
 		System.out.println("Done.");
 	}
 }
