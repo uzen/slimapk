@@ -10,9 +10,12 @@ class App {
 		String[] path = new String[2];
 		ApkOptions opt = parseArgs(args, path);
 
-		if (opt != null && path[0] != null) try (SlimApk apk = new SlimApk(path[0], path[1], opt)) {
-			System.out.println("#SlimApk\n" + apk.getConfig());
-			apk.parseDirectories();
+		if (opt != null && path[0] != null) {
+			try (SlimApk apk = new SlimApk(path[0], path[1], opt)) {
+				System.out.println("#SlimApk\n" + apk.getConfig());
+				apk.parseDirectories();
+			}
+			System.out.println("Done.");
 		}
 	}
 
