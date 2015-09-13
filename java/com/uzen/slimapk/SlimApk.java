@@ -188,9 +188,7 @@ public class SlimApk implements Closeable {
 		if(List == null) return;
 		
 		Path file = FileSystems.getDefault().getPath(Options.getFilesList());
-		
-		ResourceNote note = new ResourceNote(file, List);
-		note.writeToFile();
+	   ResourceNote.writeToFile(file, List);
 	}
 	
 	public void parseDirectories() {
