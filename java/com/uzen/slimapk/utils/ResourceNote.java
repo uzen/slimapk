@@ -15,7 +15,7 @@ public class ResourceNote {
 
 		for (Map.Entry <String, String> entry: list.entrySet()) {
 			sbuf.append(entry.getKey());
-			sbuf.append('#');
+			sbuf.append(" #");
 			sbuf.append(entry.getValue());
 			sbuf.append('\n');
 		}
@@ -23,7 +23,7 @@ public class ResourceNote {
 		return sbuf.toString();
 	}
 
-	public static void writeToFile(Path file, Map <String, String> list) {
+	public static void writeToFile(Path file, Map <String, String> list) throws IOException {
 		Charset ENCODING = Charset.forName("UTF8");
 		OutputStream fos = null;
 		BufferedOutputStream bos = null;
@@ -31,13 +31,9 @@ public class ResourceNote {
 			fos = Files.newOutputStream(file);
 			bos = new BufferedOutputStream(fos);
 			bos.write(queryString(list).getBytes(ENCODING));
-		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
-			if (bos != null) {
-				bos.flush();
-				bos.close();
-			}
+			bos.flush();
+			bos.close();
 		}
 	}
 }

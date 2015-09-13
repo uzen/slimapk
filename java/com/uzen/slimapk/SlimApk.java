@@ -86,7 +86,6 @@ public class SlimApk implements Closeable {
 		
 		try (FileSystem ApkFileSystem = FileSystems.newFileSystem(uri, env)) {
 			final Path root = ApkFileSystem.getPath("/");
-			
 			NameParserEntity apkMeta = new NameParserEntity(Options.getPattern(), root, path[0]);
 			apkMeta.parse();
 			apkName = apkMeta.getName();
