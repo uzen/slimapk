@@ -12,43 +12,28 @@ import com.uzen.slimapk.parser.FileXMLParser;
  */
 public class NameParserEntity {
 
-	private final Path root, apk;
+	private final NameParser apkName;
 	private final String pattern;
-	private String name, version;
 
-	public NameParserEntity(String pattern, Path root, Path apk) {
+	public NameParserEntity(String pattern) {
 		this.pattern = pattern;
-		this.root = root;
-		this.apk = apk;
-	}
-
-	public void parse() {
-		NameParser apkName;
-
 		if (pattern != null) {
 			apkName = new FileNameParser(pattern);
-			apkName.setName(apk);
 		} else {
 			apkName = new FileXMLParser();
+		}
+	}
+
+	public String[] parse(final Path root, final Path apk) {
+		if(pattern != null) {
+			apkName.setName(apk);
+		} else {
 			apkName.setName(root);
 		}
-
 		apkName.parseData();
-
-		ApkMeta apkMeta = apkName.getMeta();
-
-		name = apkMeta.getName();
-		if (name == null) {
-			name = apk.getFileName().toString();
-		}
-		version = apkMeta.getVersionName();
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getVersion() {
-		return version;
+		
+		ApkMeta meta = apkName.getMeta();
+		
+		return new String[]{ meta.getName(), meta.getVersionName() };
 	}
 }

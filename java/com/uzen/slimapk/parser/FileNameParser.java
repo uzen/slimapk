@@ -39,6 +39,8 @@ public class FileNameParser implements NameParser {
 		name = name.toLowerCase();
 		name = name.substring(0, 1).toUpperCase() + name.substring(1);
 		
+		if(name == null) name = file.getFileName().toString();
+
 		apkMeta.setLabel(name);
 		apkMeta.setVersionName(null);
 	}

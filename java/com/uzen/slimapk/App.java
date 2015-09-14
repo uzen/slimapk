@@ -9,14 +9,16 @@ class App {
 	public static void main(String[] args) throws IOException {
 		String[] path = new String[2];
 		ApkOptions opt = parseArgs(args, path);
-
-		if (opt != null && path[0] != null) {
-			try (SlimApk apk = new SlimApk(path[0], path[1], opt)) {
-				System.out.println("#SlimApk\n" + apk.getConfig());
-				apk.parseDirectories();
-			}
-			System.out.println("Done.");
+		if (path[0] == null || opt == null) {
+			return;
+		} else if (path[1] == null) {
+			path[1] = System.getProperty("user.dir");
 		}
+		try (SlimApk apk = new SlimApk(path[0], path[1], opt)) {
+			System.out.println("#SlimApk\n" + apk);
+			apk.parse();
+		}
+		System.out.println("Done.");
 	}
 
 	private static ApkOptions parseArgs(final String[] args, String[] path) {
@@ -33,7 +35,9 @@ class App {
 			if (!args[i].startsWith("-")) {
 				if (path[0] == null) {
 					path[0] = args[i];
-				} else if (path[1] == null) path[1] = args[i];
+				} else if (path[1] == null){
+					path[1] = args[i];
+				} 
 				continue;
 			}
 

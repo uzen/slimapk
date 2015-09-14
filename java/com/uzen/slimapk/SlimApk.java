@@ -22,16 +22,16 @@ import com.uzen.slimapk.utils.ResourceNote;
 public class SlimApk implements Closeable {
 	private ApkOptions Options;
 	private Path input, output, temp;
+	private NameParserEntity metaParser;
 	
 	private static final StandardCopyOption copyOption = StandardCopyOption.COPY_ATTRIBUTES;
 	
 	private Map<String, String> List; //list of applications with versions
 
 	public SlimApk(String input, String output, ApkOptions Options) throws IOException {
-		if (output == null) output = System.getProperty("user.dir");
-		this.Options = Options;
 		this.input = FileSystems.getDefault().getPath(input);
 		this.output = FileSystems.getDefault().getPath(output);
+		this.Options = Options;
 		createWorkingDir();
 		setType();
 		initListFiles();
@@ -65,6 +65,8 @@ public class SlimApk implements Closeable {
 	}
 
 	private void initListFiles() {
+		metaParser = new NameParserEntity(Options.getPattern());
+		
 		if(Options.getFilesList() != null) {	
 			List = new HashMap<>();
 		}
@@ -86,10 +88,7 @@ public class SlimApk implements Closeable {
 		
 		try (FileSystem ApkFileSystem = FileSystems.newFileSystem(uri, env)) {
 			final Path root = ApkFileSystem.getPath("/");
-			NameParserEntity apkMeta = new NameParserEntity(Options.getPattern(), root, path[0]);
-			apkMeta.parse();
-			apkName = apkMeta.getName();
-			addElementToList(apkName, apkMeta.getVersion());
+			apkName = addElementToList(metaParser.parse(root, path[0]));
 			path[1] = path[1].resolveSibling(apkName);
 			deleteDirectories(path[1]);
 			Files.createDirectories(path[1]);
@@ -126,10 +125,12 @@ public class SlimApk implements Closeable {
 		return path;
 	}
 	
-   private void addElementToList(String name, String version) {
+   private String addElementToList(String[] data) {
 		if(List != null) {
-			List.put(name, version);
+			List.put(data[0], data[1]); // label, version
 		}
+		
+		return data[0];
 	}
 	
 	private void extractLibrary(Path root, Path outPath) throws IOException {
@@ -190,7 +191,7 @@ public class SlimApk implements Closeable {
 	   ResourceNote.writeToFile(file, List);
 	}
 	
-	public void parseDirectories() {
+	public void parse() {
 		try {
 			ApkFileVisitor ApkParser = new ApkFileVisitor() {
 				@Override
@@ -198,9 +199,7 @@ public class SlimApk implements Closeable {
 					if(apk.toString().toLowerCase().endsWith(AndroidConstants.EXTENSION)){
 						try {
 							Path apkSlim = unzipApk(apk);				
-							if(apkSlim != null){
-								System.out.printf("save: %s\n", apkSlim.toString());
-							}
+							System.out.printf("save: %s\n", apkSlim.toString());
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -213,7 +212,8 @@ public class SlimApk implements Closeable {
 		}
 	}
 
-	public String getConfig() {
+	@Override
+   public String toString() {
 		return "Input: " + input.toString() + "\nOutput: " + output.toString() +
 			"\nArch: " + Options.getType();
 	}
