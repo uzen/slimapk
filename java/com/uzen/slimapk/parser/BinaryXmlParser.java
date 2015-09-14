@@ -73,7 +73,6 @@ public class BinaryXmlParser {
                 case ChunkType.XML_END_ELEMENT:
                     XmlNodeEndTag xmlNodeEndTag = readXmlNodeEndTag();
                     break;
-                
                 default:
                     if (chunkHeader.getChunkType() >= ChunkType.XML_FIRST_CHUNK &&
                             chunkHeader.getChunkType() <= ChunkType.XML_RESOURCE_MAP) {
@@ -196,8 +195,6 @@ public class BinaryXmlParser {
             case ChunkType.NULL:
             default:
                 throw new ParserException("Unexpected chunk type:" + chunkType);
-                
-                
         }
     }
 

@@ -7,7 +7,6 @@ import com.uzen.slimapk.struct.StringPool;
 import com.uzen.slimapk.struct.StringPoolHeader;
 import com.uzen.slimapk.struct.resource.*;
 import com.uzen.slimapk.utils.Buffers;
-import com.uzen.slimapk.utils.Pair;
 import com.uzen.slimapk.utils.ParseUtils;
 
 import java.nio.ByteBuffer;
@@ -55,19 +54,8 @@ public class ResourceTableParser {
         resourceTable.setStringPool(stringPool);
 
         PackageHeader packageHeader = (PackageHeader) readChunkHeader();
-        for (int i = 0; i < resourceTableHeader.getPackageCount(); i++) {
-            Pair<ResourcePackage, PackageHeader> pair = readPackage(packageHeader);
-            resourceTable.addPackage(pair.getLeft());
-            packageHeader = pair.getRight();
-        }
-    }
-
-    // read one package
-    private Pair<ResourcePackage, PackageHeader> readPackage(PackageHeader packageHeader) {
-        Pair<ResourcePackage, PackageHeader> pair = new Pair<>();
-        //read packageHeader
+        
         ResourcePackage resourcePackage = new ResourcePackage(packageHeader);
-        pair.setLeft(resourcePackage);
 
         long beginPos = buffer.position();
         // read type string pool
@@ -86,7 +74,6 @@ public class ResourceTableParser {
                     (StringPoolHeader) readChunkHeader()));
         }
 
-
         outer:
         while (buffer.hasRemaining()) {
             ChunkHeader chunkHeader = readChunkHeader();
@@ -94,14 +81,13 @@ public class ResourceTableParser {
                 case ChunkType.TABLE_TYPE_SPEC:
                     long typeSpecChunkBegin = buffer.position();
                     TypeSpecHeader typeSpecHeader = (TypeSpecHeader) chunkHeader;
+
                     long[] entryFlags = new long[(int) typeSpecHeader.getEntryCount()];
                     for (int i = 0; i < typeSpecHeader.getEntryCount(); i++) {
                         entryFlags[i] = Buffers.readUInt(buffer);
                     }
 
                     TypeSpec typeSpec = new TypeSpec(typeSpecHeader);
-
-
 
                     typeSpec.setEntryFlags(entryFlags);
                     //id start from 1
@@ -114,6 +100,10 @@ public class ResourceTableParser {
                 case ChunkType.TABLE_TYPE:
                     long typeChunkBegin = buffer.position();
                     TypeHeader typeHeader = (TypeHeader) chunkHeader;
+                    if(typeHeader.getId() != 0x0c){
+                    		buffer.position((int) (typeChunkBegin + typeHeader.getBodySize()));
+                    		break;
+                    }
                     // read offsets table
                     long[] offsets = new long[(int) typeHeader.getEntryCount()];
                     for (int i = 0; i < typeHeader.getEntryCount(); i++) {
@@ -122,6 +112,7 @@ public class ResourceTableParser {
 
                     Type type = new Type(typeHeader);
                     type.setName(resourcePackage.getTypeStringPool().get(typeHeader.getId() - 1));
+                    
                     long entryPos = typeChunkBegin + typeHeader.getEntriesStart()
                             - typeHeader.getHeaderSize();
                     buffer.position((int) entryPos);
@@ -136,18 +127,14 @@ public class ResourceTableParser {
                     buffer.position((int) (typeChunkBegin + typeHeader.getBodySize()));
                     break;
                 case ChunkType.TABLE_PACKAGE:
-                    // another package. we should read next package here
-                    pair.setRight((PackageHeader) chunkHeader);
                     break outer;
                 default:
                     throw new ParserException("unexpected chunk type:" + chunkHeader.getChunkType());
             }
         }
-
-        return pair;
-
+        resourceTable.addPackage(resourcePackage);
     }
-
+    
     private ChunkHeader readChunkHeader() {
         long begin = buffer.position();
 
@@ -201,7 +188,6 @@ public class ResourceTableParser {
                 buffer.position((int) (begin + headerSize));
                 return typeHeader;
             case ChunkType.NULL:
-                //buffer.skip((int) (chunkSize - headerSize));
             default:
                 throw new ParserException("Unexpected chunk Type:" + Integer.toHexString(chunkType));
         }
