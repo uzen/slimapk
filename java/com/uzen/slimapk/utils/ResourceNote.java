@@ -10,7 +10,9 @@ import java.util.Map;
 
 public class ResourceNote {
 
-	private static String queryString(Map <String, String> list) {
+	public static Charset charsetUTF8 = Charset.forName("UTF-8");
+	
+	public static String queryString(Map <String, String> list) {
 		StringBuilder sbuf = new StringBuilder();
 
 		for (Map.Entry <String, String> entry: list.entrySet()) {
@@ -24,13 +26,12 @@ public class ResourceNote {
 	}
 
 	public static void writeToFile(Path file, Map <String, String> list) throws IOException {
-		Charset ENCODING = Charset.forName("UTF8");
 		OutputStream fos = null;
 		BufferedOutputStream bos = null;
 		try {
 			fos = Files.newOutputStream(file);
 			bos = new BufferedOutputStream(fos);
-			bos.write(queryString(list).getBytes(ENCODING));
+			bos.write(queryString(list).getBytes(charsetUTF8));
 		} finally {
 			bos.flush();
 			bos.close();
