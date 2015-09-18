@@ -100,7 +100,8 @@ public class ResourceTableParser {
                 case ChunkType.TABLE_TYPE:
                     long typeChunkBegin = buffer.position();
                     TypeHeader typeHeader = (TypeHeader) chunkHeader;
-                    if(typeHeader.getId() != 0x0c){
+                    String dataType = resourcePackage.getTypeStringPool().get(typeHeader.getId() - 1);
+                    if(!dataType.equals("string")){
                     		buffer.position((int) (typeChunkBegin + typeHeader.getBodySize()));
                     		break;
                     }
@@ -111,7 +112,7 @@ public class ResourceTableParser {
                     }
 
                     Type type = new Type(typeHeader);
-                    type.setName(resourcePackage.getTypeStringPool().get(typeHeader.getId() - 1));
+                    type.setName(dataType);
                     
                     long entryPos = typeChunkBegin + typeHeader.getEntriesStart()
                             - typeHeader.getHeaderSize();
