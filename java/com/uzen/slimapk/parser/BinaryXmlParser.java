@@ -190,6 +190,7 @@ public class BinaryXmlParser {
             case ChunkType.XML_START_NAMESPACE:
             case ChunkType.XML_END_NAMESPACE:
             case ChunkType.XML_RESOURCE_MAP:
+            case ChunkType.XML_CDATA:
                 buffer.position((int) (begin + headerSize));
                 return new XmlNodeHeaderNull(chunkType, headerSize, chunkSize);
             case ChunkType.NULL:
