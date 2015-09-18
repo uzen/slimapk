@@ -40,9 +40,8 @@ public class FileXMLParser implements NameParser {
    };
 
    private void transBinaryXml(Path manifestXml, XmlStreamer xmlStreamer) throws IOException {
-        if (this.resourceTable == null) {
-            parseResourceTable();
-        }
+
+        parseResourceTable();
         
         InputStream in = Files.newInputStream(manifestXml);
         ByteBuffer buffer = ByteBuffer.wrap(Utils.toByteArray(in));
