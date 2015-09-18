@@ -130,6 +130,8 @@ public class SlimApk implements Closeable {
 			List.put(data[0], data[1]); // label, version
 		}
 		
+		data[0] = data[0].replaceAll("\\s+","");
+		
 		return data[0];
 	}
 	
