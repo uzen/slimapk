@@ -17,6 +17,7 @@ public class FileNameParser implements NameParser {
 		if(spatt == null || spatt.isEmpty()){
 			patt = "^(.+?)\\.apk";  //chrome.apk -> Chrome	
 		} else patt = spatt;
+		apkMeta = new ApkMeta();
 	}
 	
 	public void setName(Path file) {
@@ -24,23 +25,25 @@ public class FileNameParser implements NameParser {
 	}
 	
 	public void parseData() {
-		String name = file.getFileName().toString();
+		String name = file.getFileName().toString(), _name = null;
+		System.out.println(name + patt);
 		try{
 			Pattern pattern = Pattern.compile(patt, Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(name);
 			
 			if (matcher.find() && matcher.groupCount() > 0) {
-				name = matcher.group(1);
+				_name = matcher.group(1);
 			};
+			
+			
 		} catch (PatternSyntaxException e) {
-			throw new ParserException("Invalid regular expression: %s\n" + e.getMessage());
+			throw new ParserException("Invalid regular expression: %s\n" + e.getDescription());
 		} 
 		
-		name = name.toLowerCase();
+		if(_name != null) name = _name;
+		
 		name = name.substring(0, 1).toUpperCase() + name.substring(1);
 		
-		if(name == null) name = file.getFileName().toString();
-
 		apkMeta.setLabel(name);
 		apkMeta.setVersionName(null);
 	}
