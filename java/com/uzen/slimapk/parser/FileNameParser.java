@@ -26,7 +26,7 @@ public class FileNameParser implements NameParser {
 	
 	public void parseData() {
 		String name = file.getFileName().toString(), _name = null;
-		System.out.println(name + patt);
+		
 		try{
 			Pattern pattern = Pattern.compile(patt, Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(name);
@@ -34,8 +34,6 @@ public class FileNameParser implements NameParser {
 			if (matcher.find() && matcher.groupCount() > 0) {
 				_name = matcher.group(1);
 			};
-			
-			
 		} catch (PatternSyntaxException e) {
 			throw new ParserException("Invalid regular expression: %s\n" + e.getDescription());
 		} 
