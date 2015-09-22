@@ -34,6 +34,6 @@ public class NameParserEntity {
 		
 		ApkMeta meta = apkName.getMeta();
 		
-		return new String[]{ meta.getName(), meta.getVersionName() };
+		return new String[]{ meta.getName(), meta.getVersionName(), meta.getMinSdkVersion() };
 	}
 }
