@@ -8,30 +8,33 @@ class App {
 
 	public static void main(String[] args) throws IOException {
 		String[] path = new String[2];
-		ApkOptions options = parseArgs(args, path);
+		Action action = new Action(Action.PARSER);
+		ApkOptions options = parseArgs(args, path, action);
 		if (path[0] == null || options == null) {
 			return;
 		} else if (path[1] == null) {
 			path[1] = System.getProperty("user.dir");
 		}
 		try (SlimApk apk = new SlimApk(path[0], path[1], options)) {
-			if(options.getPackageInfo()) {
-				apk.info();
-			} else {
-				apk.parse();
+			switch(action.getType()) {
+				case Action.PARSER:
+					apk.parse();
+					break;
+				case Action.INFO:
+					apk.info();
+					break;
 			}
 		}
 	}
 
-	private static ApkOptions parseArgs(final String[] args, String[] path) {
+	private static ApkOptions parseArgs(final String[] args, String[] path, Action action) {
 
 		if (args.length < 1) {
 			System.err.println(getSupport());
 			return null;
 		}
-
-		String type = "arm", pattern = null, pathToFilesList = null;
-		Boolean keepDir = false, packageInfo = false;
+		ApkOptions options = new ApkOptions();
+		String type = "arm";
 
 		for (int i = 0; i < args.length; i++) {
 			if (!args[i].startsWith("-")) {
@@ -44,10 +47,10 @@ class App {
 			}
 
 			if (args[i].startsWith("-p=")) {
-				pattern = args[i].replaceFirst("-p=", "");
+				options.setPattern(args[i].replaceFirst("-p=", ""));
 				continue;
 			} else if (args[i].startsWith("-l=")) {
-				pathToFilesList = args[i].replaceFirst("-l=", "");
+				options.setFilesList(args[i].replaceFirst("-l=", ""));
 				continue;
 			}
 			
@@ -62,19 +65,20 @@ class App {
 					type = "x86";
 					break;
 				case "-k": case "--keep-dir":
-					keepDir = true;
+					options.setKeepMode(true);
 					break;
 				case "-i": case "--info":
-					packageInfo = true;
+					action.setType(Action.INFO);
+					break;
+				case "-d": case "--debug":
+					options.setDebug(true);
 					break;
 				default:
 					System.err.println("Invalid argument: " + args[i]);
 			}
 		}
 		
-		ApkOptions options = new ApkOptions(type, pattern, keepDir);
-		options.setFilesList(pathToFilesList);
-		options.setPackageInfo(packageInfo);		
+		options.setType(type);
 		
 		return options;
 	}

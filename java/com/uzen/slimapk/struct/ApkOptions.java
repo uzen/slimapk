@@ -3,18 +3,10 @@ package com.uzen.slimapk.struct;
 public class ApkOptions {	
     private String abi;
     private String pathToFilesList;
-    private Boolean packageInfo;
-    
-    private final String type;
-    private final String pattern;
-    private final Boolean keepMode;
-    
-    
-    public ApkOptions(String type, String pattern, Boolean keepMode) {
-        this.type = type;
-        this.pattern = pattern;
-        this.keepMode = keepMode;
-    }
+    private Boolean isDebug;
+    private String type;
+    private String pattern;
+    private Boolean keepMode;
     
     public void setABI(String abi) {
         this.abi = abi;
@@ -22,6 +14,26 @@ public class ApkOptions {
     
     public String getABI() {
         return abi;
+    }
+    
+    public void setType(String type) {
+        this.type = type;
+    }  
+    
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
+    }  
+    
+    public void setKeepMode(Boolean keepMode) {
+        this.keepMode = keepMode;
+    }  
+    
+    public void setDebug(Boolean debug) {
+        this.isDebug = debug;
+    }  
+    
+    public Boolean isDebug() {
+        return isDebug;
     }
     
     public String getType() {
@@ -38,14 +50,6 @@ public class ApkOptions {
 
     public String getFilesList() {
         return pathToFilesList;
-    }
-    
-    public void setPackageInfo(Boolean packageInfo) {
-        this.packageInfo = packageInfo;
-    }
-
-    public Boolean getPackageInfo() {
-        return packageInfo;
     }
 
     public Boolean getKeepMode() {
