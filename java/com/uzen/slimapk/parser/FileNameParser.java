@@ -44,6 +44,7 @@ public class FileNameParser implements NameParser {
 		
 		apkMeta.setLabel(name);
 		apkMeta.setVersionName(null);
+		apkMeta.setMinSdkVersion(null);
 	}
 	
 	public ApkMeta getMeta() {

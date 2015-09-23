@@ -14,8 +14,6 @@ import java.util.Locale;
 /**
  * Android Binary XML format
  * see http://justanapplication.wordpress.com/category/android/android-binary-xml/
- *
- * @author dongliu
  */
 public class BinaryXmlParser {
 

@@ -18,8 +18,6 @@ import java.util.Set;
 /**
  * parse android resource table file.
  * see http://justanapplication.wordpress.com/category/android/android-resources/
- *
- * @author dongliu
  */
 public class ResourceTableParser {
 
