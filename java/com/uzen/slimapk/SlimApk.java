@@ -31,11 +31,15 @@ public class SlimApk implements Closeable {
 
 	public SlimApk(String input, String output, ApkOptions Options) throws IOException {
 		this.input = FileSystems.getDefault().getPath(input);	
-		log.d("Output: ", this.output);
 		this.output = FileSystems.getDefault().getPath(output);
-		log.d("Input: ", this.input);
 		this.Options = Options;		
+		
 		Parser = new NameParserEntity(this.Options.getPattern());
+		if(Options.isDebug() != null && Options.isDebug()) {
+			log.isLoggable();
+			log.d("Input: {0}", this.input);		
+			log.d("Output: {0}", this.output);
+		}
 		setType();
 	}
 
@@ -48,8 +52,7 @@ public class SlimApk implements Closeable {
 	private void setType() {
 		String abi, type = Options.getType();
 		if (type == null) {
-			type = "_def";
-			log.w("Variable 'type' was null inside method getType.");
+			log.e("Variable 'type' was null inside method getType.");
 		}
 		switch (type) {
 			case "arm":
@@ -65,7 +68,7 @@ public class SlimApk implements Closeable {
 				abi = AndroidConstants.ABI_ARM;
 		}
 		Options.setABI(abi);		
-		log.d("ABI: ", abi);
+		log.d("ABI: {0}", abi);
 	}
 
 	private void initListFiles() {
@@ -81,7 +84,7 @@ public class SlimApk implements Closeable {
 	private void unzipApk(Path apk) throws IOException {
 		
 		Path[] path = createWorkplace(apk);
-		log.d("EXT.: ", apk);
+		log.d("EXTRACTING: {0}", apk);
 
 		Map<String, String> env = new HashMap<>();
 		env.put("encoding", "UTF-8");
@@ -106,19 +109,18 @@ public class SlimApk implements Closeable {
 			
 			path[1] = path[1].resolveSibling(apkName);
 			
-			if(deleteDirectories(path[1])) {
-				Files.createDirectories(path[1]);
-			}
+			deleteDirectories(path[1]);
+			Files.createDirectories(path[1]);
 			
 			extractLibrary(root, path[1]);
 			apk = path[1].resolve(apkName + AndroidConstants.EXTENSION);
 		} catch (IOException e) {
-			log.e("Unpacking the application failed: ", e);
+			log.e("Unpacking the application failed: {0}", e);
 			deleteDirectories(path[1]);
 			return;
 		}
 		Files.move(path[0], apk);
-		log.d("SAVE: ", apk);
+		log.d("SAVE: {0}", apk);
 	}
 	
 	private void getInfoPackage(Path apk) throws IOException {
@@ -156,7 +158,7 @@ public class SlimApk implements Closeable {
 			throw new IOException("Error occurred while copying to a temporary directory");
 		}
 
-		if (Options.getKeepMode()) {
+		if (Options.getKeepMode() != null && Options.getKeepMode()) {
 			path[1] = output.resolve(input.relativize(source));
 		} else {
 			path[1] = output.resolve(name);
@@ -182,7 +184,7 @@ public class SlimApk implements Closeable {
 			if (parseLibrary(libdir, outPath)) {
 				deleteDirectories(libdir);
 			} else {
-				throw new IOException("Incorrect application architecture");
+				throw new IOException("Incorrect architecture");
 			}
 		}
 	}
@@ -205,7 +207,7 @@ public class SlimApk implements Closeable {
 		return true;
 	}
 
-	private static boolean deleteDirectories(Path dir) throws IOException {
+	private static void deleteDirectories(Path dir) throws IOException {
 		ApkFileVisitor ApkLibDelParser = new ApkFileVisitor() {
 			@Override
 			public void actionDir(Path dir) {
@@ -226,15 +228,13 @@ public class SlimApk implements Closeable {
 		};
 		if (Files.exists(dir)) {
 			Files.walkFileTree(dir, ApkLibDelParser);
-			return true;
 		}
-		return false;
 	}
 
 	private void writeFileList() throws IOException {
 		if(List == null) return;
 		Path file = FileSystems.getDefault().getPath(Options.getFilesList());
-		log.d("Record filelist to ", file);
+		log.d("Record filelist to {0}", file);
 	   ResourceNote.writeToFile(file, List);
 	}
 	
@@ -256,7 +256,7 @@ public class SlimApk implements Closeable {
 			initListFiles();
 			Files.walkFileTree(input, ApkParser);
 		} catch (IOException e) {
-			log.e("Error while searching for files: ", e);
+			log.e("Error while searching for files: {0}", e);
 		}
 	}
 
@@ -264,7 +264,7 @@ public class SlimApk implements Closeable {
 		try{
 			getInfoPackage(input);
 		} catch (IOException e) {
-			log.e("Was unable to get information about a package: ", e);
+			log.e("Was unable to get information about a package: {0}", e);
 		}
 	}
 

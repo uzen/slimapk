@@ -1,6 +1,7 @@
 package com.uzen.slimapk.struct.exception;
 
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.SimpleFormatter;
@@ -11,6 +12,7 @@ class LogFormatter extends SimpleFormatter {
         ConsoleHandler handler = new ConsoleHandler();
         Logger.setUseParentHandlers(false);
         handler.setFormatter(this);
+        handler.setLevel(Level.ALL);
         Logger.addHandler(handler);
     }
     

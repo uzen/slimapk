@@ -8,13 +8,18 @@ public class SlimLog {
 		
     private static Logger Logger;
     
-    private static boolean debug = true;
+    private static boolean debug = false;
 	
     public SlimLog(String className) {
         Logger = Logger.getLogger(className);
         LogFormatter Formatter = new LogFormatter();
-        Formatter.configure(Logger);
+        Formatter.configure(Logger);        
+        Logger.setLevel(Level.ALL);
     }	
+
+    public static void isLoggable() {
+        debug = true;
+    }
     
     public static void d(String message, Object param1) {
         if (debug)
