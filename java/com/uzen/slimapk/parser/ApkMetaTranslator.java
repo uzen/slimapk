@@ -18,7 +18,8 @@ public class ApkMetaTranslator implements XmlStreamer {
         Attributes attributes = xmlNodeStartTag.getAttributes();
         switch (xmlNodeStartTag.getName()) {
             case "application":
-                apkMeta.setLabel(attributes.get("label"));
+                apkMeta.setLabel(attributes.get("label"));                
+                apkMeta.setMultiArch(attributes.getBoolean("multiArch", false));
                 break;
             case "manifest":
                 apkMeta.setPackageName(attributes.get("package"));
