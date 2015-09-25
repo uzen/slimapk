@@ -63,14 +63,16 @@ public class SlimParse extends SlimApk {
 			log.d("PackageName: " + label);
 			log.d("Version: " + version);
 			
+			label = label.replaceAll("\\s","");
+			
 			if (Options.getKeepMode()) {
 				outdir = output.resolve(input.relativize(source));
+				outdir = outdir.resolveSibling(label);
 			} else {
 				outdir = output;
+				outdir = outdir.resolve(label);
 			}
 						
-			label = label.replaceAll("\\s","");
-			outdir = outdir.resolve(label);
 			cleaning(outdir);			
 			extractLibrary(libdir, outdir);
 			ApkFileSystem.close();
