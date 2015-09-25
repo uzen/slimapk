@@ -14,7 +14,7 @@ import com.uzen.slimapk.struct.exception.ParserException;
 import com.uzen.slimapk.parser.*;
 import com.uzen.slimapk.utils.Utils;
 
-public class FileXMLParser implements NameParser {
+public class FileXMLParser {
 	private Path root;
 	private ResourceTable resourceTable;
 	private ApkMeta apkMeta;
