@@ -6,7 +6,9 @@ public class AndroidConstants {
 	public static final String RESOURCE_FILE = "resources.arsc";
 	
 	public static final String LIB_PREFIX = "lib";
-	public static final String LIB_DIR = "lib/arm";
+	public static final String ARM = "arm";
+	public static final String ARM64 = "arm64";
+	public static final String X86 = "x86";
 
 	public static final String ABI_ARM = "armeabi";
 	public static final String ABI_ARMv7 = "armeabi-v7a";

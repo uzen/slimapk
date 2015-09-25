@@ -2,67 +2,72 @@ package com.uzen.slimapk;
 
 import java.io.IOException;
 import com.uzen.slimapk.struct.ApkOptions;
+import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.SlimApk;
 
 class App {
 
+	private static ApkOptions options;
+
 	public static void main(String[] args) throws IOException {
-		String[] path = new String[2];
 		Action action = new Action(Action.PARSER);
-		ApkOptions options = parseArgs(args, path, action);
+		String[] path = parseArgs(args, action);
 		if (path[0] == null || options == null) {
 			return;
 		} else if (path[1] == null) {
 			path[1] = System.getProperty("user.dir");
 		}
-		try (SlimApk apk = new SlimApk(path[0], path[1], options)) {
-			switch(action.getType()) {
-				case Action.PARSER:
-					apk.parse();
-					break;
-				case Action.INFO:
-					apk.info();
-					break;
-			}
-		}
+		
+		switch(action.getType()) {
+			case Action.PARSER:
+				SlimParse ap = new SlimParse(path[0], path[1], options);
+				ap.parse();
+				break;
+			case Action.INFO:
+				SlimInfo ai = new SlimInfo(path[0], path[1], options);
+				ai.info();
+				break;
+		} 
 	}
 
-	private static ApkOptions parseArgs(final String[] args, String[] path, Action action) {
-
+	private static String[] parseArgs(final String[] args, Action action) {
 		if (args.length < 1) {
 			System.err.println(getSupport());
 			return null;
 		}
-		ApkOptions options = new ApkOptions();
-		String type = "arm";
 
+		String input = null, output = null;
+		
+		options = new ApkOptions();
+		options.setType(AndroidConstants.ARM);
+		
 		for (int i = 0; i < args.length; i++) {
 			if (!args[i].startsWith("-")) {
-				if (path[0] == null) {
-					path[0] = args[i];
-				} else if (path[1] == null){
-					path[1] = args[i];
+				if (input == null) {
+					input = args[i];
+				} else if (output == null){
+					output = args[i];
 				} 
 				continue;
 			}
 
-			if (args[i].startsWith("-p=")) {
-				options.setPattern(args[i].replaceFirst("-p=", ""));
-				continue;
-			} else if (args[i].startsWith("-l=")) {
+			if (args[i].startsWith("-l=")) {
 				options.setFilesList(args[i].replaceFirst("-l=", ""));
 				continue;
 			}
 			
 			switch (args[i]) {
 				case "-a32": case "--arm":
-					type = "arm";
+					//default
 					break;
 				case "-a64": case "--arm64":
-					type = "arm64";
+					options.setType(AndroidConstants.ARM64);
 					break;
 				case "-x86": case "--x86":
-					type = "x86";
+					options.setType(AndroidConstants.X86);
+					break;
+				case "-m": case "--multiple":
+					options.setType("any");
 					break;
 				case "-k": case "--keep-dir":
 					options.setKeepMode(true);
@@ -78,9 +83,7 @@ class App {
 			}
 		}
 		
-		options.setType(type);
-		
-		return options;
+		return new String[]{input, output};
 	}
 
 	private static String getImplementation() {
@@ -94,8 +97,8 @@ class App {
 		+ " -a32 (--arm) - ARM\n" 
 		+ " -a64 (--arm64) - ARM 64-bit\n" 
 		+ " -x86 (--x86) - X86\n" 
+		+ " -m (--multiple) : ARM, ARM64, X86\n"
 		+ " -k (--keep-directory) keep the structure the f/s\n" 
-		+ " -p [-p=\"default template file name\"]\n" 
 		+ " -l [-l=\"path to save the list of applications\"]\n" 
 		+ " -i (--info) get more information about a specific package\n"
 		+ "\nver. " + getImplementation() + "\n";

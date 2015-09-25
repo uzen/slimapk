@@ -5,7 +5,6 @@ public class ApkOptions {
     private String pathToFilesList;
     private Boolean isDebug;
     private String type;
-    private String pattern;
     private Boolean keepMode;
     
     public void setABI(String abi) {
@@ -18,10 +17,6 @@ public class ApkOptions {
     
     public void setType(String type) {
         this.type = type;
-    }  
-    
-    public void setPattern(String pattern) {
-        this.pattern = pattern;
     }  
     
     public void setKeepMode(Boolean keepMode) {
@@ -38,10 +33,6 @@ public class ApkOptions {
     
     public String getType() {
         return type;
-    }
-    
-    public String getPattern() {
-        return pattern;
     }
 
     public void setFilesList(String pathToFilesList) {
