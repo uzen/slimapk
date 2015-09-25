@@ -108,6 +108,7 @@ class App {
 		+ " -k (--keep-directory) keep the structure the f/s\n" 
 		+ " -l [-l=\"path to save the list of applications\"]\n" 
 		+ " -i (--info) get more information about a specific package\n"
+		+ " -ec (--enable-catch) working with a copy of the application from the temporary folder\n"
 		+ "\nver. " + getImplementation() + "\n";
 	}
 }

@@ -4,8 +4,8 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
 import java.nio.file.StandardCopyOption;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.IOException;
 
 import com.uzen.slimapk.parser.ApkFileVisitor;
@@ -24,7 +24,7 @@ public class SlimApk {
 	protected static final SlimLog log = new SlimLog(SlimApk.class.getName());
 	private static final StandardCopyOption COPY_OPTION = StandardCopyOption.COPY_ATTRIBUTES;
 	
-	private Map<String, String> List; //list of applications with versions
+	private ArrayList<List<String>> List; //list of applications with versions
 	
 	public SlimApk(String input, String output, ApkOptions Options) throws IOException {
 		this.input = FileSystems.getDefault().getPath(input);	
@@ -39,7 +39,7 @@ public class SlimApk {
 			log.d("Output: {0}", this.output);
 		}
 		if(Options.getFilesList() != null) {	
-			List = new HashMap<>();
+			List = new ArrayList<>();
 		}
 	}
 	
@@ -65,7 +65,10 @@ public class SlimApk {
 	
    protected void addElementToList(String label, String version) {
 		if(List != null) {
-			List.put(label, version);
+			ArrayList<String> data = new ArrayList<>();
+			data.add(label);
+			data.add(version);
+			List.add(data);
 		}
 	}
 	
@@ -100,13 +103,19 @@ public class SlimApk {
 	   Utils.writeToFile(file, queryString(List));
 	}
 	
-	private static String queryString(Map <String, String> list) {
+	private static String queryString(ArrayList<List<String>> list) {
 		StringBuilder sbuf = new StringBuilder();
 
-		for (Map.Entry <String, String> entry: list.entrySet()) {
-			sbuf.append(entry.getKey());
-			sbuf.append(" #");
-			sbuf.append(entry.getValue());
+		for (List<String> entry: list) {
+			int size = entry.size();
+			for(int i = 0; i < size; i++){
+				sbuf.append(entry.get(i));
+				if(i == 0){
+					sbuf.append(" #");
+					continue;
+				}
+				sbuf.append(" ");
+			}
 			sbuf.append('\n');
 		}
 
