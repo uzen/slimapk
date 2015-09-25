@@ -9,11 +9,14 @@ public class AndroidConstants {
 	public static final String ARM = "arm";
 	public static final String ARM64 = "arm64";
 	public static final String X86 = "x86";
+	public static final String X86_64 = "x86_64";
 
 	public static final String ABI_ARM = "armeabi";
 	public static final String ABI_ARMv7 = "armeabi-v7a";
 	public static final String ABI_ARMv8 = "arm64-v8a";
 	public static final String ABI_X86 = "x86";
+	public static final String ABI_X86_64 = "x86_64";
+	
 	public static final String EXTENSION = ".apk";
    /**
     * the binary xml file used system attr id.

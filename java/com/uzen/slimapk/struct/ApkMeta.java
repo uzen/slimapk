@@ -10,7 +10,7 @@ public class ApkMeta {
     private String versionName;
     private Long versionCode;
     private String minSdkVersion;
-    private Boolean multiArch;
+    private boolean multiArch;
 
     public String getPackageName() {
         return packageName;
@@ -44,11 +44,11 @@ public class ApkMeta {
         this.minSdkVersion = minSdkVersion;
     }
     
-    public Boolean getMultiArch() {
+    public boolean getMultiArch() {
         return multiArch;
     }
 
-    public void setMultiArch(Boolean multiArch) {
+    public void setMultiArch(boolean multiArch) {
         this.multiArch = multiArch;
     }
 

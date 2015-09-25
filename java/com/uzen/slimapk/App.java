@@ -39,7 +39,7 @@ class App {
 		String input = null, output = null;
 		
 		options = new ApkOptions();
-		options.setType(AndroidConstants.ARM);
+		options.setABI(AndroidConstants.ABI_ARMv7);
 		
 		for (int i = 0; i < args.length; i++) {
 			if (!args[i].startsWith("-")) {
@@ -58,16 +58,19 @@ class App {
 			
 			switch (args[i]) {
 				case "-a32": case "--arm":
-					//default
+					//default ABI
 					break;
 				case "-a64": case "--arm64":
-					options.setType(AndroidConstants.ARM64);
+					options.setABI(AndroidConstants.ABI_ARMv8);
 					break;
 				case "-x86": case "--x86":
-					options.setType(AndroidConstants.X86);
+					options.setABI(AndroidConstants.ABI_X86);
+					break;
+				case "-x86_64": case "--x86_64":
+					options.setABI(AndroidConstants.ABI_X86_64);
 					break;
 				case "-m": case "--multiple":
-					options.setType("any");
+					options.setABI("multiple");
 					break;
 				case "-k": case "--keep-dir":
 					options.setKeepMode(true);
@@ -77,6 +80,9 @@ class App {
 					break;
 				case "-d": case "--debug":
 					options.setDebug(true);
+					break;
+				case "-ec": case "--enable-cache":
+					options.setCacheStatus(true);
 					break;
 				default:
 					System.err.println("Invalid argument: " + args[i]);
@@ -97,7 +103,8 @@ class App {
 		+ " -a32 (--arm) - ARM\n" 
 		+ " -a64 (--arm64) - ARM 64-bit\n" 
 		+ " -x86 (--x86) - X86\n" 
-		+ " -m (--multiple) : ARM, ARM64, X86\n"
+		+ " -x86_64 (--x86_64) - X86_64\n" 
+		+ " -m (--multiple) : ARM, ARM64, X86, X86_64\n"
 		+ " -k (--keep-directory) keep the structure the f/s\n" 
 		+ " -l [-l=\"path to save the list of applications\"]\n" 
 		+ " -i (--info) get more information about a specific package\n"

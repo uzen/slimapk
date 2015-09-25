@@ -1,38 +1,35 @@
 package com.uzen.slimapk.struct;
 
 public class ApkOptions {	
+    
     private String abi;
     private String pathToFilesList;
-    private Boolean isDebug;
-    private String type;
-    private Boolean keepMode;
+    private boolean isDebug;
+    private boolean isCache;
+    private boolean keepMode;
     
     public void setABI(String abi) {
         this.abi = abi;
-    }  
+    } 
     
     public String getABI() {
         return abi;
     }
     
-    public void setType(String type) {
-        this.type = type;
-    }  
-    
-    public void setKeepMode(Boolean keepMode) {
-        this.keepMode = keepMode;
-    }  
-    
-    public void setDebug(Boolean debug) {
+    public void setDebug(boolean debug) {
         this.isDebug = debug;
     }  
     
-    public Boolean isDebug() {
+    public boolean isDebug() {
         return isDebug;
     }
+
+    public void setCacheStatus(boolean status) {
+        this.isCache = status;
+    }  
     
-    public String getType() {
-        return type;
+    public boolean isCache() {
+        return isCache;
     }
 
     public void setFilesList(String pathToFilesList) {
@@ -43,7 +40,11 @@ public class ApkOptions {
         return pathToFilesList;
     }
 
-    public Boolean getKeepMode() {
+    public boolean getKeepMode() {
         return keepMode;
-    }
+    } 
+    
+    public void setKeepMode(boolean keepMode) {
+        this.keepMode = keepMode;
+    } 
 }

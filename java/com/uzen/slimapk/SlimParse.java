@@ -54,6 +54,7 @@ public class SlimParse extends SlimApk {
 		try {
 			FileSystem ApkFileSystem = Utils.getFileSystem(_app);
 			final Path root = ApkFileSystem.getPath("/");
+			final Path libdir = root.resolve(AndroidConstants.LIB_PREFIX);
 			Parser.setName(root);
 			Parser.parseData();
 			meta = Parser.getMeta();
@@ -62,7 +63,7 @@ public class SlimParse extends SlimApk {
 			log.d("PackageName: " + label);
 			log.d("Version: " + version);
 			
-			if (Options.getKeepMode() != null && Options.getKeepMode()) {
+			if (Options.getKeepMode()) {
 				outdir = output.resolve(input.relativize(source));
 			} else {
 				outdir = output;
@@ -70,9 +71,8 @@ public class SlimParse extends SlimApk {
 						
 			label = label.replaceAll("\\s","");
 			outdir = outdir.resolve(label);
-			cleaning(outdir);
-			log.d("Copying libraries...");			
-			extractLibrary(root, outdir);
+			cleaning(outdir);			
+			extractLibrary(libdir, outdir);
 			ApkFileSystem.close();
 			app = outdir.resolve(label + AndroidConstants.EXTENSION);
 			Files.move(_app, app);				
@@ -88,11 +88,11 @@ public class SlimParse extends SlimApk {
 		}
 	}
 	
-	private void extractLibrary(Path root, Path outdir) throws IOException {
-			log.i("native:" + String.valueOf(meta.getMultiArch()));
-			Path libdir = root.resolve(AndroidConstants.LIB_PREFIX);
-			LibParser lib = new LibParser(libdir, Options.getType(), Options.getABI());
-			lib.extract(outdir);
+	private void extractLibrary(Path libdir, Path outdir) throws IOException {
+			log.d("native-code:" + String.valueOf(meta.getMultiArch()));
+			LibParser lib = new LibParser(libdir, meta.getMultiArch());
+			log.d("Copying libraries...");
+			lib.extract(Options.getABI(), outdir);
 			deleteDirectories(libdir);
 	}
 	

@@ -33,7 +33,7 @@ public class SlimApk {
 		this.output = FileSystems.getDefault().getPath(output);
 		this.Options = Options;		
 		
-		if(Options.isDebug() != null && Options.isDebug()) {
+		if(Options.isDebug()) {
 			log.isLoggable();
 			log.d("Input: {0}", this.input);		
 			log.d("Output: {0}", this.output);
@@ -41,29 +41,6 @@ public class SlimApk {
 		if(Options.getFilesList() != null) {	
 			List = new HashMap<>();
 		}
-		setType();
-	}
-	
-	private void setType() {
-		String abi, type = Options.getType();
-		if (type == null) {
-			log.e("Variable 'type' was null inside method getType.");
-		}
-		switch (type) {
-			case AndroidConstants.ARM:
-				abi = AndroidConstants.ABI_ARMv7;
-				break;
-			case AndroidConstants.ARM64:
-				abi = AndroidConstants.ABI_ARMv8;
-				break;
-			case AndroidConstants.X86:
-				abi = AndroidConstants.ABI_X86;
-				break;
-			default:
-				abi = AndroidConstants.ABI_ARM;
-		}
-		Options.setABI(abi);		
-		log.d("ABI: {0}", abi);
 	}
 	
 	protected void createWorkingDir() throws IOException {
@@ -72,6 +49,9 @@ public class SlimApk {
 	}
 	
 	protected Path createTempApp(final Path source) {
+		if(!Options.isCache()){
+			return source;
+		}
 		Path name = source.getFileName();
 		Path slim_apk = temp.resolve(name);
 		try{
@@ -88,7 +68,7 @@ public class SlimApk {
 			List.put(label, version);
 		}
 	}
-
+	
 	public static void deleteDirectories(Path dir) throws IOException {
 		ApkFileVisitor ApkLibDelParser = new ApkFileVisitor() {
 			@Override
