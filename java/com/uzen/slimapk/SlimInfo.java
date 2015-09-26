@@ -2,8 +2,10 @@ package com.uzen.slimapk;
 
 import java.nio.file.Path;
 import java.nio.file.FileSystem;
+import java.util.ArrayList;
 import java.io.IOException;
 
+import com.uzen.slimapk.parser.FileXMLParser;
 import com.uzen.slimapk.struct.ApkOptions;
 import com.uzen.slimapk.struct.ApkMeta;
 import com.uzen.slimapk.utils.Utils;
@@ -21,21 +23,37 @@ public class SlimInfo extends SlimApk {
 	private void getInfoPackage(Path apk) {
 		try (FileSystem ApkFileSystem = Utils.getFileSystem(apk)) {
 			final Path root = ApkFileSystem.getPath("/");
+			final Path libdir = root.resolve("lib");
+			FileXMLParser Parser = new FileXMLParser();
+			ApkMeta meta = new ApkMeta();
+			
 			Parser.setName(root);
 			Parser.parseData();
-			ApkMeta meta = Parser.getMeta();
-			String[][] dump = {
-				{"PackageName", meta.getName()},
-				{"Version", meta.getVersionName()},
-				{"minSdkVersion", meta.getMinSdkVersion()}, 
-				{"VersionCode", String.valueOf(meta.getVersionCode())}
-			};
+			meta = Parser.getMeta();
 			
-			for(String[] data:dump){
-				log.i(data[0] + ": " + data[1]);
+			for(String value:dump(meta, libdir)) {
+				log.i(value);
 			}
+			
 		} catch (IOException e) {
 			log.e("Was unable to get information about a package:\n {0}", e);
 		}
+	}
+	
+	private static ArrayList<String> dump(ApkMeta meta, Path path) {
+		ArrayList<String> data = new ArrayList<>();
+		data.add("Package: " + meta.getPackageName());
+		data.add("Name: " + meta.getName());
+		data.add("Version: " + meta.getVersionName());
+		data.add("VersionCode: " + meta.getVersionCode());
+		data.add("minSdkVersion: " + meta.getMinSdkVersion());
+		data.add("native-code: " + meta.getMultiArch());
+		String lib = "";
+		for(String entry:LibraryFilter.list(path))
+			lib = lib.concat(" " + entry);
+		if(lib.length() > 0)
+			data.add("Library:" + lib);
+			
+		return data;
 	}
 }
