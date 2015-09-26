@@ -4,41 +4,46 @@ import java.io.IOException;
 import com.uzen.slimapk.struct.ApkOptions;
 import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.SlimApk;
+import com.uzen.slimapk.struct.exception.Log;
 
-class App {
+public class App {
+	
+	static Log log = new Log(App.class.getName());
+	static String input;
+	static String output;
 
-	private static ApkOptions options;
-
-	public static void main(String[] args) throws IOException {
-		Action action = new Action(Action.PARSER);
-		String[] path = parseArgs(args, action);
-		if (path[0] == null || options == null) {
+	public static void main(String[] args) {
+		if (args.length < 1) {
+			log.w(getSupport());
 			return;
-		} else if (path[1] == null) {
-			path[1] = System.getProperty("user.dir");
 		}
 		
-		switch(action.getType()) {
-			case Action.PARSER:
-				SlimParse ap = new SlimParse(path[0], path[1], options);
-				ap.parse();
-				break;
-			case Action.INFO:
-				SlimInfo ai = new SlimInfo(path[0], path[1], options);
-				ai.info();
-				break;
-		} 
+		Action action = new Action(Action.PARSER);
+		ApkOptions options = parseArgs(args, action);
+		if (input == null) {
+			return;
+		} else if (output == null) {
+			output = System.getProperty("user.dir");
+		}
+		try{
+			switch(action.getType()) {
+				case Action.PARSER:
+					SlimParser ap = new SlimParser(input, output, options);
+					ap.parse();
+					break;
+				case Action.INFO:
+					SlimInfo ai = new SlimInfo(input, output, options);
+					ai.info();
+					break;
+			} 
+		} catch (IOException e) {
+			log.e(e.getMessage());
+		}
 	}
 
-	private static String[] parseArgs(final String[] args, Action action) {
-		if (args.length < 1) {
-			System.err.println(getSupport());
-			return null;
-		}
-
-		String input = null, output = null;
+	private static ApkOptions parseArgs(final String[] args, Action action) {
 		
-		options = new ApkOptions();
+		ApkOptions options = new ApkOptions();
 		options.setABI(AndroidConstants.ABI_ARMv7);
 		
 		for (int i = 0; i < args.length; i++) {
@@ -85,11 +90,11 @@ class App {
 					options.setCacheStatus(true);
 					break;
 				default:
-					System.err.println("Invalid argument: " + args[i]);
+					log.w("Invalid argument: " + args[i]);
 			}
 		}
 		
-		return new String[]{input, output};
+		return options;
 	}
 
 	private static String getImplementation() {

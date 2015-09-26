@@ -5,17 +5,19 @@ import java.nio.file.Files;
 import java.nio.file.FileSystem;
 import java.io.IOException;
 
+import com.uzen.slimapk.parser.FileXMLParser;
 import com.uzen.slimapk.parser.ApkFileVisitor;
 import com.uzen.slimapk.struct.ApkOptions;
 import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.struct.ApkMeta;
 import com.uzen.slimapk.utils.Utils;
 
-public class SlimParse extends SlimApk {
-
+public class SlimParser extends SlimApk {
+	
+	private FileXMLParser Parser;
 	private ApkMeta meta;
 
-	public SlimParse(String input, String output, ApkOptions Options) throws IOException {
+	public SlimParser(String input, String output, ApkOptions Options) throws IOException {
 		super(input, output, Options);
 	}
 	
@@ -29,7 +31,8 @@ public class SlimParse extends SlimApk {
 					}
 				}
 			};
-			createWorkingDir();
+			Parser = new FileXMLParser();
+			Files.createDirectories(output);
 			Files.walkFileTree(input, ApkParser);
 		} catch (IOException e) {
 			log.e("Error while searching for files:\n {0}", e);
@@ -46,7 +49,6 @@ public class SlimParse extends SlimApk {
 	}
 	
 	private void unzipApk(Path source) {
-				
 		log.d("EXTRACTING: {0}", source);
 		Path app = null, _app = createTempApp(source);
 		Path outdir = null;
@@ -55,9 +57,7 @@ public class SlimParse extends SlimApk {
 			FileSystem ApkFileSystem = Utils.getFileSystem(_app);
 			final Path root = ApkFileSystem.getPath("/");
 			final Path libdir = root.resolve(AndroidConstants.LIB_PREFIX);
-			Parser.setName(root);
-			Parser.parseData();
-			meta = Parser.getMeta();
+			meta = getMeta(root);
 			String label = meta.getName(), version = meta.getVersionName();
 			addElementToList(label, version);
 			log.d("PackageName: " + label);
@@ -80,26 +80,26 @@ public class SlimParse extends SlimApk {
 			Files.move(_app, app);				
 			log.d("SAVE: {0}", app);
 		} catch (IOException e) {
-			log.e("Unpacking the application failed:\n {0}", e.getMessage());
+			log.e("Unpacking the application failed:\n {0}", e);
 			try{
 				if(outdir != null)
 					deleteDirectories(outdir);
 			} catch (IOException ex) {
-				e.printStackTrace();
+				log.e("Сould not delete the application files:\n {0}", ex);
 			}
 		}
 	}
 	
 	private void extractLibrary(Path libdir, Path outdir) throws IOException {
-			log.d("native-code:" + String.valueOf(meta.getMultiArch()));
-			LibParser lib = new LibParser(libdir, meta.getMultiArch());
+			LibraryFilter lib = new LibraryFilter(libdir, meta.getMultiArch());
 			log.d("Copying libraries...");
 			lib.extract(Options.getABI(), outdir);
 			deleteDirectories(libdir);
 	}
 	
-	private void cleaning(Path dir) throws IOException {
-			deleteDirectories(dir);
-			Files.createDirectories(dir);
+	private ApkMeta getMeta(Path path){
+			Parser.setName(path);
+			Parser.parseData();
+			return Parser.getMeta();
 	}
 }

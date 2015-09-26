@@ -3,7 +3,6 @@ package com.uzen.slimapk;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
@@ -11,18 +10,15 @@ import java.io.IOException;
 import com.uzen.slimapk.parser.ApkFileVisitor;
 import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.struct.ApkOptions;
-import com.uzen.slimapk.struct.exception.SlimLog;
-import com.uzen.slimapk.parser.FileXMLParser;
+import com.uzen.slimapk.struct.exception.Log;
 import com.uzen.slimapk.struct.ApkMeta;
 import com.uzen.slimapk.utils.Utils;
 
 public class SlimApk {
 	protected ApkOptions Options;
 	protected Path input, output, temp;
-	protected FileXMLParser Parser = new FileXMLParser();
 	
-	protected static final SlimLog log = new SlimLog(SlimApk.class.getName());
-	private static final StandardCopyOption COPY_OPTION = StandardCopyOption.COPY_ATTRIBUTES;
+	protected static Log log = new Log(SlimApk.class.getName());
 	
 	private ArrayList<List<String>> List; //list of applications with versions
 	
@@ -41,21 +37,18 @@ public class SlimApk {
 		if(Options.getFilesList() != null) {	
 			List = new ArrayList<>();
 		}
-	}
-	
-	protected void createWorkingDir() throws IOException {
-		Files.createDirectories(output);
-		temp = Files.createTempDirectory("slim_");
+		if(Options.isCache()){
+			temp = Files.createTempDirectory("slim_");
+		}
 	}
 	
 	protected Path createTempApp(final Path source) {
-		if(!Options.isCache()){
+		if(temp == null)
 			return source;
-		}
-		Path name = source.getFileName();
-		Path slim_apk = temp.resolve(name);
+
+		Path slim_apk = temp.resolve(source.getFileName());
 		try{
-			Files.copy(source, slim_apk, COPY_OPTION);
+			Files.copy(source, slim_apk);
 		} catch(IOException e) {
 			log.e("Error occurred while copying to a temporary directory:\n {0}", e);
 			slim_apk = source;
@@ -99,8 +92,13 @@ public class SlimApk {
 	protected void writeFileList() throws IOException {
 		if(List == null) return;
 		Path file = FileSystems.getDefault().getPath(Options.getFilesList());
-		log.d("Record filelist to {0}", file);
+		log.d("Write a file list to {0}", file);
 	   Utils.writeToFile(file, queryString(List));
+	}
+	
+	protected static void cleaning(Path dir) throws IOException {
+			deleteDirectories(dir);
+			Files.createDirectories(dir);
 	}
 	
 	private static String queryString(ArrayList<List<String>> list) {

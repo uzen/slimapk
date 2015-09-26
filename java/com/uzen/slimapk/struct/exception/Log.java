@@ -4,13 +4,13 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.uzen.slimapk.struct.exception.LogFormatter;
 
-public class SlimLog {
+public class Log {
 		
     private static Logger Logger;
     
     private static boolean debug = false;
 	
-    public SlimLog(String className) {
+    public Log(String className) {
         Logger = Logger.getLogger(className);
         LogFormatter Formatter = new LogFormatter();
         Formatter.configure(Logger);        

@@ -10,14 +10,14 @@ import java.io.IOException;
 
 import com.uzen.slimapk.struct.AndroidConstants;
 
-public class LibParser {
+public class LibraryFilter {
 
 	private final Path LIB_DIR;
-	private boolean hasMultiArch = false;	
+	private boolean hasMultiArch;	
 	private static final String fs = System.getProperty("file.separator");
 	private static final StandardCopyOption COPY_OPTION = StandardCopyOption.REPLACE_EXISTING;
 
-	public LibParser(Path libdir, boolean hasMultiArch) {
+	public LibraryFilter(Path libdir, boolean hasMultiArch) {
 		this.LIB_DIR = libdir;
 		this.hasMultiArch = hasMultiArch;
 	}
@@ -26,15 +26,15 @@ public class LibParser {
 		if (Files.notExists(LIB_DIR)) return;
 		outdir = outdir.resolve(AndroidConstants.LIB_PREFIX);
 		
-		ArrayList<String> architectures = listFiles(LIB_DIR);
+		ArrayList<String> architectures = list(LIB_DIR);
 		Collections.sort(architectures);
 		
 		int archCount = architectures.size();
 		
-		if(abi == "multiple" || hasMultiArch) {
+		if(abi.equals("multiple") || hasMultiArch) {
 			for(int i = 0; i < archCount; i++){
 				Path dir = LIB_DIR.resolve(architectures.get(i));
-				copyFiles(dir, outdir.resolve(getType(architectures.get(i))));
+				copy(dir, outdir.resolve(getArch(architectures.get(i))));
 			}
 			return;
 		}
@@ -47,13 +47,13 @@ public class LibParser {
 		
 		if (index >= 0) {
 			Path dir = LIB_DIR.resolve(architectures.get(index));
-			copyFiles(dir, outdir.resolve(getType(architectures.get(index))));
+			copy(dir, outdir.resolve(getArch(architectures.get(index))));
 		} else {
 			throw new IOException("Incorrect architecture: " + abi);
 		}
 	}
 	
-	private String getType(String abi) {
+	public String getArch(String abi) {
 		String arch = null;
 		
 		switch (abi) {
@@ -75,23 +75,23 @@ public class LibParser {
 		return arch;
 	}
 	
-	public static ArrayList<String>listFiles(Path dir) throws IOException {
+	public static ArrayList<String>list(Path dir) {
 		ArrayList<String> list = new ArrayList<>();
 		try (DirectoryStream < Path > stream = Files.newDirectoryStream(dir)) {
 			for (Path file: stream) {
 				list.add(getFileName(file));
 		   }
-		}
+		} catch (IOException e) {}
 		return list;
    }	
    
-	public static void copyFiles(Path dir, Path outdir) throws IOException {
-		Files.createDirectories(outdir);
-		try (DirectoryStream < Path > stream = Files.newDirectoryStream(dir)) {
+	public static void copy(Path in, Path out) {
+		try (DirectoryStream < Path > stream = Files.newDirectoryStream(in)) {
+			Files.createDirectories(out);
 			for (Path file: stream) {
-				Files.copy(file, outdir.resolve(file.getFileName().toString()), COPY_OPTION);
+				Files.copy(file, out.resolve(file.getFileName().toString()), COPY_OPTION);
 			}
-		}
+		} catch (IOException e) {}
 	}
 	
 	private static String getFileName(Path file) {
