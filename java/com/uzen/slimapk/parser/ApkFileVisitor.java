@@ -29,9 +29,16 @@ public class ApkFileVisitor extends SimpleFileVisitor <Path> {
 			actionFile(path);
 			return FileVisitResult.CONTINUE;
 		}
+		
 		@Override
 		public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
 			actionDir(dir);
+			return FileVisitResult.CONTINUE;
+		}
+		
+		@Override
+		public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+			exc.printStackTrace();
 			return FileVisitResult.CONTINUE;
 		}
 }
