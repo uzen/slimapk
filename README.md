@@ -16,12 +16,16 @@ Example:
 
 $ java -jar slimapk.jar -a32 -k apps/ out/ -l=list.txt
 
-$ java -jar slimapk.jar VLC-Android-ARMv7.apk -i
+$ java -jar slimapk.jar antox.apk -i
 
 <pre>
 
-[INFO] PackageName: VLC
-[INFO] Version: 1.4.1
-[INFO] minSdkVersion: 7
+[INFO] Package: chat.tox.antox
+[INFO] Name: Antox
+[INFO] Version: 0.23.54
+[INFO] VersionCode: 1554
+[INFO] minSdkVersion: 9
+[INFO] native-code: false
+[INFO] Library: armeabi
 
 </pre>
