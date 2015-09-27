@@ -14,7 +14,7 @@ public class App {
 
 	public static void main(String[] args) {
 		if (args.length < 1) {
-			log.w(getSupport());
+			log.i(getSupport());
 			return;
 		}
 		
@@ -75,7 +75,7 @@ public class App {
 					options.setABI(AndroidConstants.ABI_X86_64);
 					break;
 				case "-m": case "--multiple":
-					options.setABI("multiple");
+					options.setABI(null);
 					break;
 				case "-k": case "--keep-dir":
 					options.setKeepMode(true);
