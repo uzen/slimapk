@@ -48,11 +48,11 @@ public class SlimInfo extends SlimApk {
 		data.add("VersionCode: " + meta.getVersionCode());
 		data.add("minSdkVersion: " + meta.getMinSdkVersion());
 		data.add("native-code: " + meta.getMultiArch());
-		String lib = "";
+		String libs = new String();
 		for(String entry:LibraryFilter.list(path))
-			lib = lib.concat(" " + entry);
-		if(lib.length() > 0)
-			data.add("Library:" + lib);
+			libs = libs.concat(" " + entry);
+		if(libs.length() > 0)
+			data.add("Library:" + libs);
 			
 		return data;
 	}

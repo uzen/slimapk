@@ -62,7 +62,7 @@ public class SlimApk {
 		}
 	}
 	
-	public static void deleteDirectories(Path dir) throws IOException {
+	public static void deleteDirectory(Path dir) throws IOException {
 		ApkFileVisitor ApkLibDelParser = new ApkFileVisitor() {
 			@Override
 			public void actionDir(Path dir) {
@@ -91,11 +91,6 @@ public class SlimApk {
 		Path file = FileSystems.getDefault().getPath(Options.getFilesList());
 		log.d("Write a file list to {0}", file);
 	   Utils.writeToFile(file, queryString(List));
-	}
-	
-	protected static void cleaning(Path dir) throws IOException {
-			deleteDirectories(dir);
-			Files.createDirectories(dir);
 	}
 	
 	private static String queryString(ArrayList<List<String>> list) {

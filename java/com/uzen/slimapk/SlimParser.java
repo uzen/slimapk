@@ -77,7 +77,8 @@ public class SlimParser extends SlimApk {
 				outdir = outdir.resolve(label);
 			}
 						
-			cleaning(outdir);			
+			this.deleteDirectory(outdir);
+			Files.createDirectories(outdir);		
 			extractLibrary(libdir, outdir);
 			ApkFileSystem.close();
 			app = outdir.resolve(label + AndroidConstants.EXTENSION);
@@ -87,7 +88,7 @@ public class SlimParser extends SlimApk {
 			log.e("Unpacking the application failed:\n {0}", e);
 			try{
 				if(outdir != null)
-					deleteDirectories(outdir);
+					deleteDirectory(outdir);
 			} catch (IOException ex) {
 				log.e("Сould not delete the application files:\n {0}", ex);
 			}
@@ -98,7 +99,7 @@ public class SlimParser extends SlimApk {
 			LibraryFilter lib = new LibraryFilter(libdir, meta.getMultiArch());
 			log.d("Copying libraries...");
 			lib.extract(Options.getABI(), outdir);
-			deleteDirectories(libdir);
+			deleteDirectory(libdir);
 	}
 	
 	private ApkMeta getMeta(Path path){
