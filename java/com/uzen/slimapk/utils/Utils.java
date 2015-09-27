@@ -44,10 +44,14 @@ public class Utils {
     }
     
     public static FileSystem getFileSystem(Path file) throws IOException {
-        String encodeURI = file.toAbsolutePath().toString();
-        encodeURI = encodeURI.replaceAll("\\s", "%20");
-        URI uri = URI.create("jar:file:" + encodeURI);
-		
-        return FileSystems.newFileSystem(uri, new HashMap<String, String>());
+        FileSystem fs = null;
+        try{
+        	URI fileUri = file.toUri();
+        	URI uri = new URI("jar:" + fileUri.getScheme(), fileUri.getPath(), null);
+        	fs = FileSystems.newFileSystem(uri, new HashMap<String, String>());
+        } catch (Exception e) {
+        		e.printStackTrace();
+        }
+        return fs;
     }
 }
