@@ -16,11 +16,11 @@ import com.uzen.slimapk.utils.Utils;
 
 public class SlimApk {
 	protected ApkOptions Options;
-	protected Path input, output, temp;
+	protected Path input, output;
 	
 	protected static Log log = new Log(SlimApk.class.getName());
 	
-	private ArrayList<List<String>> List; //list of applications with versions
+	ArrayList<List<String>> List; //list of applications with versions
 	
 	public SlimApk(String input, String output, ApkOptions Options) throws IOException {
 		this.input = FileSystems.getDefault().getPath(input);	
@@ -37,12 +37,9 @@ public class SlimApk {
 		if(Options.getFilesList() != null) {	
 			List = new ArrayList<>();
 		}
-		if(Options.isCache()){
-			temp = Files.createTempDirectory("slim_");
-		}
 	}
 	
-	protected Path createTempApp(final Path source) {
+	protected Path createTempApp(Path source, Path temp) {
 		if(temp == null)
 			return source;
 
@@ -56,7 +53,7 @@ public class SlimApk {
 		return slim_apk;
 	}
 	
-   protected void addElementToList(String label, String version) {
+	protected void addElementToList(String label, String version) {
 		if(List != null) {
 			ArrayList<String> data = new ArrayList<>();
 			data.add(label);

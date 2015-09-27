@@ -12,10 +12,9 @@ import com.uzen.slimapk.struct.AndroidConstants;
 
 public class LibraryFilter {
 
-	private final Path LIB_DIR;
-	private boolean hasMultiArch;	
-	private static final String fs = System.getProperty("file.separator");
-	private static final StandardCopyOption COPY_OPTION = StandardCopyOption.REPLACE_EXISTING;
+	final Path LIB_DIR;
+	boolean hasMultiArch;	
+	static String fs = System.getProperty("file.separator");
 
 	public LibraryFilter(Path libdir, boolean hasMultiArch) {
 		this.LIB_DIR = libdir;
@@ -89,7 +88,7 @@ public class LibraryFilter {
 		try (DirectoryStream < Path > stream = Files.newDirectoryStream(in)) {
 			Files.createDirectories(out);
 			for (Path file: stream) {
-				Files.copy(file, out.resolve(file.getFileName().toString()), COPY_OPTION);
+				Files.copy(file, out.resolve(file.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
 			}
 		} catch (IOException e) {}
 	}

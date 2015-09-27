@@ -14,11 +14,15 @@ import com.uzen.slimapk.utils.Utils;
 
 public class SlimParser extends SlimApk {
 	
-	private FileXMLParser Parser;
-	private ApkMeta meta;
+	FileXMLParser parser;
+	ApkMeta meta;	
+	Path temp;
 
 	public SlimParser(String input, String output, ApkOptions Options) throws IOException {
 		super(input, output, Options);
+		if(Options.isCache()){
+			temp = Files.createTempDirectory("slim_");
+		}
 	}
 	
 	public void parse() {
@@ -31,7 +35,7 @@ public class SlimParser extends SlimApk {
 					}
 				}
 			};
-			Parser = new FileXMLParser();
+			this.parser = new FileXMLParser();
 			Files.createDirectories(output);
 			Files.walkFileTree(input, ApkParser);
 		} catch (IOException e) {
@@ -50,7 +54,7 @@ public class SlimParser extends SlimApk {
 	
 	private void unzipApk(Path source) {
 		log.d("EXTRACTING: {0}", source);
-		Path app = null, _app = createTempApp(source);
+		Path app = null, _app = createTempApp(source, temp);
 		Path outdir = null;
 		
 		try {
@@ -98,8 +102,8 @@ public class SlimParser extends SlimApk {
 	}
 	
 	private ApkMeta getMeta(Path path){
-			Parser.setName(path);
-			Parser.parseData();
-			return Parser.getMeta();
+			parser.setName(path);
+			parser.parseData();
+			return parser.getMeta();
 	}
 }
