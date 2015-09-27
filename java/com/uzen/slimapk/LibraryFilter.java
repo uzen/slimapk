@@ -13,8 +13,7 @@ import com.uzen.slimapk.struct.AndroidConstants;
 public class LibraryFilter {
 
 	final Path LIB_DIR;
-	boolean hasMultiArch;	
-	static String fs = System.getProperty("file.separator");
+	boolean hasMultiArch;
 
 	public LibraryFilter(Path libdir, boolean hasMultiArch) {
 		this.LIB_DIR = libdir;
@@ -30,7 +29,7 @@ public class LibraryFilter {
 		
 		int archCount = architectures.size();
 		
-		if(abi.equals("multiple") || hasMultiArch) {
+		if(abi == null || hasMultiArch) {
 			for(int i = 0; i < archCount; i++){
 				Path dir = LIB_DIR.resolve(architectures.get(i));
 				copy(dir, outdir.resolve(getArch(architectures.get(i))));
@@ -95,6 +94,6 @@ public class LibraryFilter {
 	
 	private static String getFileName(Path file) {
 		String path = file.toString();
-		return path.substring(path.indexOf(fs, 2)+1, path.length()-1);
+		return path.substring(path.indexOf("/", 2)+1, path.length()-1);
 	}
 }
