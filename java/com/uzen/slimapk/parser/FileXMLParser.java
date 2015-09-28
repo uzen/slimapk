@@ -15,10 +15,10 @@ import com.uzen.slimapk.parser.*;
 import com.uzen.slimapk.utils.Utils;
 
 public class FileXMLParser {
-	private Path root;
-	private ResourceTable resourceTable;
-	private ApkMeta apkMeta;
-	private Locale locale = Locale.US;
+	Path root;
+	ResourceTable resourceTable;
+	ApkMeta apkMeta;
+	Locale locale = Locale.US;
 	
 	public void setName(Path root){
 		this.root = root; 
