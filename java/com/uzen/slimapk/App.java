@@ -8,10 +8,10 @@ import com.uzen.slimapk.struct.exception.Log;
 
 public class App {
 	
-	static Log log = new Log(App.class.getName());
-	static String input;
-	static String output;
-
+	private static Log log = new Log(App.class.getName());
+	
+	private static String input, output;
+	
 	public static void main(String[] args) {
 		if (args.length < 1) {
 			log.i(getSupport());
@@ -115,5 +115,26 @@ public class App {
 		+ " -i (--info) get more information about a specific package\n"
 		+ " -ec (--enable-catch) working with a copy of the application from the temporary folder\n"
 		+ "\nver. " + getImplementation() + "\n";
+	}
+}
+
+class Action {
+	
+	public static final int PARSER = 0x1;
+	public static final int INFO = 0x2;
+	
+	private static int type;
+	 
+	Action(int type) {
+		this.type = type;
+	};
+	
+	public void setType(int type) {
+		if(this.type < type)
+			this.type = type;
+	}
+	
+	public int getType() {
+		return type;
 	}
 }

@@ -19,7 +19,7 @@ public class SlimApk {
 	
 	protected static Log log = new Log(SlimApk.class.getName());
 	
-	ArrayList<List<String>> List; //list of applications with versions
+	private ArrayList<List<String>> List; //list of applications with versions
 	
 	public SlimApk(String input, String output, ApkOptions Options) throws IOException {
 		this.input = FileSystems.getDefault().getPath(input);	

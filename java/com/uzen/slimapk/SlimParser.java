@@ -14,9 +14,9 @@ import com.uzen.slimapk.utils.Utils;
 
 public class SlimParser extends SlimApk {
 	
-	FileXMLParser parser;
-	ApkMeta meta;	
-	Path temp;
+	private FileXMLParser parser;
+	private ApkMeta meta;	
+	private Path temp;
 
 	public SlimParser(String input, String output, ApkOptions Options) throws IOException {
 		super(input, output, Options);

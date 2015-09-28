@@ -12,8 +12,8 @@ import com.uzen.slimapk.struct.AndroidConstants;
 
 public class LibraryFilter {
 
-	final Path LIB_DIR;
-	boolean hasMultiArch;
+	private final Path LIB_DIR;
+	private boolean hasMultiArch;
 
 	public LibraryFilter(Path libdir, boolean hasMultiArch) {
 		this.LIB_DIR = libdir;

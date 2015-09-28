@@ -56,19 +56,21 @@ public class SlimInfo extends SlimApk {
 		
 		boolean outputAltNativeCode = false;
 		
-		int index = list.indexOf(AndroidConstants.ABI_X86_64);
-		
-		if (index < 0)
-			index = list.indexOf(AndroidConstants.ABI_ARMv8);
+		if(meta.getMultiArch()) {
+			int index = list.indexOf(AndroidConstants.ABI_X86_64);
 			
-		if (index >= 0) {	
-			log.i(str + list.get(index));
-			list.remove(index);
-			outputAltNativeCode = true;
+			if (index < 0)
+				index = list.indexOf(AndroidConstants.ABI_ARMv8);
+				
+			if (index >= 0) {	
+				log.i(str + list.get(index));
+				list.remove(index);
+				outputAltNativeCode = true;
+			}
 		}
 		
-		for(String entry:list)
-			libs = libs.concat(entry + " ");
+		for(String lib:list)
+			libs = libs.concat(lib + " ");
 			
 		if(libs.length() > 0) {
 			if(outputAltNativeCode)
