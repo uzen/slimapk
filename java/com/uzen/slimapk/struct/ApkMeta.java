@@ -9,7 +9,10 @@ public class ApkMeta {
     private String label;
     private String versionName;
     private Long versionCode;
+
+    private String targetSdkVersion;
     private String minSdkVersion;
+    
     private boolean multiArch;
 
     public String getPackageName() {
@@ -44,6 +47,14 @@ public class ApkMeta {
         this.minSdkVersion = minSdkVersion;
     }
     
+    public String getTargetSdkVersion() {
+        return targetSdkVersion;
+    }
+
+    public void setTargetSdkVersion(String targetSdkVersion) {
+        this.targetSdkVersion = targetSdkVersion;
+    }
+	
     public boolean getMultiArch() {
         return multiArch;
     }
@@ -68,5 +79,15 @@ public class ApkMeta {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+    
+    @Override
+    public String toString() {
+        return "Package: \t" + packageName + "\n"
+                + "PackageName: \t" + label + "\n"
+                + "Version: \t" + versionName + "\n"
+                + "VersionCode: \t" + versionCode + "\n"
+                + "sdkVersion: \t" + targetSdkVersion + "\n"
+                + "minSdkVersion: \t" + minSdkVersion + "\0";
     }
 }

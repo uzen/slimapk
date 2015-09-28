@@ -28,6 +28,7 @@ public class ApkMetaTranslator implements XmlStreamer {
                 break;
             case "uses-sdk":
                 apkMeta.setMinSdkVersion(attributes.get("minSdkVersion"));
+                apkMeta.setTargetSdkVersion(attributes.get("targetSdkVersion"));
                 break;
         }
         tagStack[depth++] = xmlNodeStartTag.getName();
