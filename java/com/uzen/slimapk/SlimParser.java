@@ -14,11 +14,15 @@ import com.uzen.slimapk.utils.Utils;
 
 public class SlimParser extends SlimApk {
 	
-	private FileXMLParser Parser;
-	private ApkMeta meta;
+	private FileXMLParser parser;
+	private ApkMeta meta;	
+	private Path temp;
 
 	public SlimParser(String input, String output, ApkOptions Options) throws IOException {
 		super(input, output, Options);
+		if(Options.isCache()){
+			temp = Files.createTempDirectory("slim_");
+		}
 	}
 	
 	public void parse() {
@@ -31,7 +35,7 @@ public class SlimParser extends SlimApk {
 					}
 				}
 			};
-			Parser = new FileXMLParser();
+			this.parser = new FileXMLParser();
 			Files.createDirectories(output);
 			Files.walkFileTree(input, ApkParser);
 		} catch (IOException e) {
@@ -50,7 +54,7 @@ public class SlimParser extends SlimApk {
 	
 	private void unzipApk(Path source) {
 		log.d("EXTRACTING: {0}", source);
-		Path app = null, _app = createTempApp(source);
+		Path app = null, _app = createTempApp(source, temp);
 		Path outdir = null;
 		
 		try {
@@ -73,7 +77,8 @@ public class SlimParser extends SlimApk {
 				outdir = outdir.resolve(label);
 			}
 						
-			cleaning(outdir);			
+			this.deleteDirectory(outdir);
+			Files.createDirectories(outdir);		
 			extractLibrary(libdir, outdir);
 			ApkFileSystem.close();
 			app = outdir.resolve(label + AndroidConstants.EXTENSION);
@@ -83,7 +88,7 @@ public class SlimParser extends SlimApk {
 			log.e("Unpacking the application failed:\n {0}", e);
 			try{
 				if(outdir != null)
-					deleteDirectories(outdir);
+					deleteDirectory(outdir);
 			} catch (IOException ex) {
 				log.e("Сould not delete the application files:\n {0}", ex);
 			}
@@ -94,12 +99,12 @@ public class SlimParser extends SlimApk {
 			LibraryFilter lib = new LibraryFilter(libdir, meta.getMultiArch());
 			log.d("Copying libraries...");
 			lib.extract(Options.getABI(), outdir);
-			deleteDirectories(libdir);
+			deleteDirectory(libdir);
 	}
 	
 	private ApkMeta getMeta(Path path){
-			Parser.setName(path);
-			Parser.parseData();
-			return Parser.getMeta();
+			parser.setName(path);
+			parser.parseData();
+			return parser.getMeta();
 	}
 }
