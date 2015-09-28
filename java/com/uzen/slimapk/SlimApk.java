@@ -8,7 +8,6 @@ import java.util.List;
 import java.io.IOException;
 
 import com.uzen.slimapk.parser.ApkFileVisitor;
-import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.struct.ApkOptions;
 import com.uzen.slimapk.struct.exception.Log;
 import com.uzen.slimapk.struct.ApkMeta;
@@ -16,7 +15,7 @@ import com.uzen.slimapk.utils.Utils;
 
 public class SlimApk {
 	protected ApkOptions Options;
-	protected Path input, output, temp;
+	protected Path input, output;
 	
 	protected static Log log = new Log(SlimApk.class.getName());
 	
@@ -37,12 +36,9 @@ public class SlimApk {
 		if(Options.getFilesList() != null) {	
 			List = new ArrayList<>();
 		}
-		if(Options.isCache()){
-			temp = Files.createTempDirectory("slim_");
-		}
 	}
 	
-	protected Path createTempApp(final Path source) {
+	protected Path createTempApp(Path source, Path temp) {
 		if(temp == null)
 			return source;
 
@@ -56,7 +52,7 @@ public class SlimApk {
 		return slim_apk;
 	}
 	
-   protected void addElementToList(String label, String version) {
+	protected void addElementToList(String label, String version) {
 		if(List != null) {
 			ArrayList<String> data = new ArrayList<>();
 			data.add(label);
@@ -65,7 +61,7 @@ public class SlimApk {
 		}
 	}
 	
-	public static void deleteDirectories(Path dir) throws IOException {
+	public static void deleteDirectory(Path dir) throws IOException {
 		ApkFileVisitor ApkLibDelParser = new ApkFileVisitor() {
 			@Override
 			public void actionDir(Path dir) {
@@ -94,11 +90,6 @@ public class SlimApk {
 		Path file = FileSystems.getDefault().getPath(Options.getFilesList());
 		log.d("Write a file list to {0}", file);
 	   Utils.writeToFile(file, queryString(List));
-	}
-	
-	protected static void cleaning(Path dir) throws IOException {
-			deleteDirectories(dir);
-			Files.createDirectories(dir);
 	}
 	
 	private static String queryString(ArrayList<List<String>> list) {
