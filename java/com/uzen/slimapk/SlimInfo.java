@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import com.uzen.slimapk.parser.FileXMLParser;
 import com.uzen.slimapk.struct.ApkOptions;
+import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.struct.ApkMeta;
 import com.uzen.slimapk.utils.Utils;
 
@@ -30,30 +31,51 @@ public class SlimInfo extends SlimApk {
 			Parser.setName(root);
 			Parser.parseData();
 			meta = Parser.getMeta();
-			
-			for(String value:dump(meta, libdir)) {
-				log.i(value);
-			}
+			dump(meta, libdir);
 			
 		} catch (IOException e) {
 			log.e("Was unable to get information about a package:\n {0}", e);
 		}
 	}
 	
-	private static ArrayList<String> dump(ApkMeta meta, Path path) {
-		ArrayList<String> data = new ArrayList<>();
-		data.add("Package: " + meta.getPackageName());
-		data.add("Name: " + meta.getName());
-		data.add("Version: " + meta.getVersionName());
-		data.add("VersionCode: " + meta.getVersionCode());
-		data.add("minSdkVersion: " + meta.getMinSdkVersion());
-		data.add("native-code: " + meta.getMultiArch());
-		String lib = "";
-		for(String entry:LibraryFilter.list(path))
-			lib = lib.concat(" " + entry);
-		if(lib.length() > 0)
-			data.add("Library:" + lib);
+	private static void dump(ApkMeta meta, Path path) {
+		char[] m_arr = meta.toString().toCharArray();
+
+		for(int i = 0, x = 0; i < m_arr.length; i++) {
+			if (m_arr[i] == '\n' || m_arr[i] == '\0') {
+				char[] a = new char[i-x];
+				System.arraycopy(m_arr, x, a, 0, i-x);
+				x = i+1;
+				log.i(String.valueOf(a));
+			}
+		}
+		
+		ArrayList<String> list = LibraryFilter.list(path);
+		String str = new String("native-code: \t");
+		String libs = new String();
+		
+		boolean outputAltNativeCode = false;
+		
+		if(meta.getMultiArch()) {
+			int index = list.indexOf(AndroidConstants.ABI_X86_64);
 			
-		return data;
+			if (index < 0)
+				index = list.indexOf(AndroidConstants.ABI_ARMv8);
+				
+			if (index >= 0) {	
+				log.i(str + list.get(index));
+				list.remove(index);
+				outputAltNativeCode = true;
+			}
+		}
+		
+		for(String lib:list)
+			libs = libs.concat(lib + " ");
+			
+		if(libs.length() > 0) {
+			if(outputAltNativeCode)
+				str = "alt-native: \t";
+			log.i(str + libs);
+		}
 	}
 }
