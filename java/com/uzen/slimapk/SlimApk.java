@@ -8,7 +8,6 @@ import java.util.List;
 import java.io.IOException;
 
 import com.uzen.slimapk.parser.ApkFileVisitor;
-import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.struct.ApkOptions;
 import com.uzen.slimapk.struct.exception.Log;
 import com.uzen.slimapk.struct.ApkMeta;
