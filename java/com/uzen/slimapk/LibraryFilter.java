@@ -13,29 +13,21 @@ import com.uzen.slimapk.struct.AndroidConstants;
 public class LibraryFilter {
 
 	private final Path LIB_DIR;
-	private boolean hasMultiArch;
-
-	public LibraryFilter(Path libdir, boolean hasMultiArch) {
+	private ArrayList<String> architectures;
+	
+	public LibraryFilter(Path libdir) {
 		this.LIB_DIR = libdir;
-		this.hasMultiArch = hasMultiArch;
 	}
 	
-	public void extract(String abi, Path outdir) throws IOException {
-		if (Files.notExists(LIB_DIR)) return;
-		outdir = outdir.resolve(AndroidConstants.LIB_PREFIX);
+	public int parse(String abi) throws IOException {
+		if (Files.notExists(LIB_DIR))
+			return -1;
 		
-		ArrayList<String> architectures = list(LIB_DIR);
+		architectures = list(LIB_DIR);
 		Collections.sort(architectures);
 		
-		int archCount = architectures.size();
-		
-		if(abi == null || hasMultiArch) {
-			for(int i = 0; i < archCount; i++){
-				Path dir = LIB_DIR.resolve(architectures.get(i));
-				copy(dir, outdir.resolve(getArch(architectures.get(i))));
-			}
-			return;
-		}
+		if (abi == null) 
+			return architectures.size();
 		
 		int index = architectures.indexOf(abi);
 		
@@ -44,14 +36,25 @@ public class LibraryFilter {
 		}
 		
 		if (index >= 0) {
-			Path dir = LIB_DIR.resolve(architectures.get(index));
-			copy(dir, outdir.resolve(getArch(architectures.get(index))));
+			return index;
 		} else {
 			throw new IOException("Incorrect architecture: " + abi);
 		}
 	}
 	
-	public String getArch(String abi) {
+	public void extractAll(Path outdir, int size) {
+		for(int i = 0; i < size; i++){
+			Path dir = LIB_DIR.resolve(architectures.get(i));
+			copy(dir, outdir.resolve(getArch(architectures.get(i))));
+		}
+	}
+	
+	public void extract(Path outdir, int index) {
+		Path dir = LIB_DIR.resolve(architectures.get(index));
+		copy(dir, outdir.resolve(getArch(architectures.get(index))));
+	}
+	
+	public static String getArch(String abi) {
 		String arch = null;
 		
 		switch (abi) {
@@ -83,8 +86,8 @@ public class LibraryFilter {
 		return list;
    }	
    
-	public static void copy(Path in, Path out) {
-		try (DirectoryStream < Path > stream = Files.newDirectoryStream(in)) {
+	private static void copy(Path in, Path out) {
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(in)) {
 			Files.createDirectories(out);
 			for (Path file: stream) {
 				Files.copy(file, out.resolve(file.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);

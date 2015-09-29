@@ -1,8 +1,9 @@
 package com.uzen.slimapk;
 
 import java.nio.file.Path;
-import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.io.IOException;
 
 import com.uzen.slimapk.parser.FileXMLParser;
@@ -11,37 +12,48 @@ import com.uzen.slimapk.struct.ApkMeta;
 import com.uzen.slimapk.utils.Utils;
 
 public class SlimParser extends SlimApk {
-	
+
 	private FileXMLParser parser;
+	private FileCollections list;
 	private Path temp;
 
 	public SlimParser(String input, String output, ApkOptions Options) throws IOException {
 		super(input, output, Options);
+		this.parser = new FileXMLParser();
+		
+		log.d("Input: {0}", this.input);		
+		log.d("Output: {0}", this.output);
+		
 		if(Options.isCache()){
 			temp = Files.createTempDirectory("slim_");
 		}
-		this.parser = new FileXMLParser();
 	}
 	
 	public void parse() {
+		if(Options.getFilesList() != null) {	
+			list = new FileCollections();
+		}
 		try {			
 			Files.createDirectories(output);
 			search(input);
 		} catch (IOException e) {
 			log.e("Error while searching for files:\n {0}", e);
 		} finally {
-			try {
-				if(temp != null) {
-					temp.toFile().deleteOnExit();
+			if(temp != null) {
+				temp.toFile().deleteOnExit();
+			}
+			if(list != null) {	
+				try{		
+					log.d("Write a file list");
+					Path fileList = Paths.get(Options.getFilesList());
+					Utils.toFile(fileList, list.queryString(list.getList()));
+				} catch (IOException ex) {
+					log.e("Error writing to the file list:\n {0}", ex);
 				}
-				writeFileList();
-			} catch (IOException ex) {
-				log.e("Error writing to the file list:\n {0}", ex);
 			}
 		}
 	}
 	
-	@Override
 	public void build(Path source) {
 		log.d("EXTRACTING: {0}", source);
 		Path app = null, _app = createTempApp(source, temp);
@@ -49,11 +61,16 @@ public class SlimParser extends SlimApk {
 		
 		try {
 			FileSystem ApkFileSystem = Utils.getFileSystem(_app);
-			final Path root = ApkFileSystem.getPath("/");
-			final Path libdir = root.resolve(Const.LIB_PREFIX);
-			
+			Path root = ApkFileSystem.getPath("/");
 			ApkMeta meta = getAttribute(root);
-			String label = getFileName(meta);
+			String label = meta.getLabel();
+			if(list != null) 			
+				list.addElementToList(new String[]{
+					label,
+					meta.getVersionName()
+				});
+			
+			label = label.replaceAll("\\s","");
 			
 			if (Options.getKeepMode()) {
 				outdir = output.resolve(input.relativize(source));
@@ -62,10 +79,10 @@ public class SlimParser extends SlimApk {
 				outdir = output;
 				outdir = outdir.resolve(label);
 			}
-						
-			this.deleteDirectory(outdir);
-			Files.createDirectories(outdir);		
-			extractLibrary(libdir, outdir, meta.getMultiArch());
+			
+			cleaningDirectory(outdir);			
+			log.d("Copying libraries...");		
+			extractLibrary(root.resolve(Const.LIB_PREFIX), outdir.resolve(Const.LIB_PREFIX), meta.getMultiArch());
 			ApkFileSystem.close();
 			app = outdir.resolve(label + Const.EXTENSION);
 			Files.move(_app, app);				
@@ -80,29 +97,28 @@ public class SlimParser extends SlimApk {
 		}
 	}
 	
-	private void extractLibrary(Path libdir, Path outdir, boolean m) throws IOException {
-			LibraryFilter lib = new LibraryFilter(libdir, m);
-			log.d("Copying libraries...");
-			lib.extract(Options.getABI(), outdir);
-			deleteDirectory(libdir);
+	private void extractLibrary(Path libdir, Path outdir, boolean hasMultiArch) throws IOException {
+			LibraryFilter lib = new LibraryFilter(libdir);
+			String abi = Options.getABI();
+			int index = lib.parse(abi);
+			if(index >= 0) {
+				if(abi == null || hasMultiArch) {
+					lib.extractAll(outdir, index);
+				} else {
+					lib.extract(outdir, index);
+				}				
+				deleteDirectory(libdir);
+			}
 	}
 	
-	private ApkMeta getAttribute(Path path){
+	private ApkMeta getAttribute(Path path) {
 			parser.setName(path);
 			parser.parseData();
 			return parser.getMeta();
-	}
+	}	
 	
-	private String getFileName(ApkMeta meta) {
-			String label = meta.getName(), version = meta.getVersionName();
-			
-			addElementToList(label, version);
-			
-			log.d("PackageName: " + label);
-			log.d("Version: " + version);
-			
-			label = label.replaceAll("\\s","");
-			return label;
-	}
-				
+	private void cleaningDirectory(Path dir) throws IOException {
+			this.deleteDirectory(dir);
+			Files.createDirectories(dir);
+	}		
 }

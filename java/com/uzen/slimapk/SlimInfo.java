@@ -12,8 +12,11 @@ import com.uzen.slimapk.utils.Utils;
 
 public class SlimInfo extends SlimApk {
 
+	private FileXMLParser parser;
+
 	public SlimInfo(String input, String output, ApkOptions Options) throws IOException {
 		super(input, output, Options);
+		this.parser = new FileXMLParser();
 	}
 	
 	public void info() {
@@ -24,12 +27,10 @@ public class SlimInfo extends SlimApk {
 		}
 	}
 	
-	@Override
 	public void build(Path apk) {
 		try (FileSystem ApkFileSystem = Utils.getFileSystem(apk)) {
-			final Path root = ApkFileSystem.getPath("/");
-			final Path libdir = root.resolve("lib");
-			FileXMLParser parser = new FileXMLParser();
+			Path root = ApkFileSystem.getPath("/");
+			Path libdir = root.resolve("lib");
 			
 			parser.setName(root);
 			parser.parseData();
@@ -54,7 +55,6 @@ public class SlimInfo extends SlimApk {
 		
 		ArrayList<String> list = LibraryFilter.list(path);
 		String str = new String("native-code: \t");
-		String libs = new String();
 		
 		boolean outputAltNativeCode = false;
 		
@@ -70,6 +70,8 @@ public class SlimInfo extends SlimApk {
 				outputAltNativeCode = true;
 			}
 		}
+		
+		String libs = new String();
 		
 		for(String lib:list)
 			libs = libs.concat(lib + " ");

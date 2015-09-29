@@ -27,7 +27,7 @@ public class Utils {
         }
     }
     
-    public static void writeToFile(Path file, String list) throws IOException {
+    public static void toFile(Path file, String list) throws IOException {
     	FileOutputStream fos = null;
     	try {
     		fos = new FileOutputStream(file.toString());

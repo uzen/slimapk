@@ -64,13 +64,6 @@ public class ApkMeta {
     }
 
     /**
-     * alias for getLabel
-     */
-    public String getName() {
-        return label;
-    }
-
-    /**
      * get the apk's title(name)
      */
     public String getLabel() {

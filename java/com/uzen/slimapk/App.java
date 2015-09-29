@@ -3,7 +3,6 @@ package com.uzen.slimapk;
 import java.io.IOException;
 import com.uzen.slimapk.struct.ApkOptions;
 import com.uzen.slimapk.struct.AndroidConstants;
-import com.uzen.slimapk.SlimApk;
 import com.uzen.slimapk.struct.exception.Log;
 
 public class App {

@@ -1,48 +1,51 @@
 package com.uzen.slimapk;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.Files;
-import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
 import java.io.IOException;
 
 import com.uzen.slimapk.struct.ApkOptions;
 import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.struct.exception.Log;
-import com.uzen.slimapk.struct.ApkMeta;
-import com.uzen.slimapk.utils.Utils;
 
-public class SlimApk {
+public abstract class SlimApk {
 	protected ApkOptions Options;
 	protected Path input, output;
-	protected static AndroidConstants Const;
 	
+	protected static AndroidConstants Const;	
 	protected static Log log = new Log(SlimApk.class.getName());
 	
-	private ArrayList<List<String>> List; //list of applications with versions
-	
 	public SlimApk(String input, String output, ApkOptions Options) throws IOException {
-		this.input = FileSystems.getDefault().getPath(input);	
+		this.input = Paths.get(input);	
 		if (Files.notExists(this.input)) 
 			throw new IOException("No such file or directory: " + this.input);
-		this.output = FileSystems.getDefault().getPath(output);
+		this.output = Paths.get(output);
 		this.Options = Options;		
 		
 		if(Options.isDebug()) {
 			log.isLoggable();
-			log.d("Input: {0}", this.input);		
-			log.d("Output: {0}", this.output);
-		}
-		if(Options.getFilesList() != null) {	
-			List = new ArrayList<>();
 		}
 	}
 	
-	protected Path createTempApp(Path source, Path temp) {
+	abstract void build(Path path);
+	
+	public void search(Path path) throws IOException {
+		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes fileAttributes) {
+				if(file.toString().toLowerCase().endsWith(Const.EXTENSION)){
+					build(file);
+				}
+				return FileVisitResult.CONTINUE;
+			}
+		});
+	}
+	
+	public static Path createTempApp(Path source, Path temp) {
 		if(temp == null)
 			return source;
 
@@ -54,31 +57,6 @@ public class SlimApk {
 			slim_apk = source;
 		}
 		return slim_apk;
-	}
-	
-	protected void addElementToList(String label, String version) {
-		if(List != null) {
-			ArrayList<String> data = new ArrayList<>();
-			data.add(label);
-			data.add(version);
-			List.add(data);
-		}
-	}
-	
-	protected void search(Path path) throws IOException {
-		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes fileAttributes) {
-				if(file.toString().toLowerCase().endsWith(Const.EXTENSION)){
-					build(file);		
-				}
-				return FileVisitResult.CONTINUE;
-			}
-		});
-	}
-	
-	public void build(Path file){
-		return;
 	}
 	
 	public static void deleteDirectory(Path path) throws IOException {
@@ -111,31 +89,5 @@ public class SlimApk {
 				return FileVisitResult.CONTINUE;
 			}
 		});
-	}
-
-	protected void writeFileList() throws IOException {
-		if(List == null) return;
-		Path file = FileSystems.getDefault().getPath(Options.getFilesList());
-		log.d("Write a file list to {0}", file);
-	   Utils.writeToFile(file, queryString(List));
-	}
-	
-	private static String queryString(ArrayList<List<String>> list) {
-		StringBuilder sbuf = new StringBuilder();
-
-		for (List<String> entry: list) {
-			int size = entry.size();
-			for(int i = 0; i < size; i++){
-				sbuf.append(entry.get(i));
-				if(i == 0){
-					sbuf.append(" #");
-					continue;
-				}
-				sbuf.append(" ");
-			}
-			sbuf.append('\n');
-		}
-
-		return sbuf.toString();
 	}
 }
