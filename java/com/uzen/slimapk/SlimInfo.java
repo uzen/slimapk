@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import com.uzen.slimapk.parser.FileXMLParser;
 import com.uzen.slimapk.struct.ApkOptions;
-import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.struct.ApkMeta;
 import com.uzen.slimapk.utils.Utils;
 
@@ -18,21 +17,24 @@ public class SlimInfo extends SlimApk {
 	}
 	
 	public void info() {
-		getInfoPackage(input);
+		try{
+			search(input);
+		} catch (IOException e) {
+			log.e("Could not find the application:\n {0}", e);
+		}
 	}
 	
-	private void getInfoPackage(Path apk) {
+	@Override
+	public void build(Path apk) {
 		try (FileSystem ApkFileSystem = Utils.getFileSystem(apk)) {
 			final Path root = ApkFileSystem.getPath("/");
 			final Path libdir = root.resolve("lib");
-			FileXMLParser Parser = new FileXMLParser();
-			ApkMeta meta = new ApkMeta();
+			FileXMLParser parser = new FileXMLParser();
 			
-			Parser.setName(root);
-			Parser.parseData();
-			meta = Parser.getMeta();
-			dump(meta, libdir);
+			parser.setName(root);
+			parser.parseData();
 			
+			dump(parser.getMeta(), libdir);
 		} catch (IOException e) {
 			log.e("Was unable to get information about a package:\n {0}", e);
 		}
@@ -57,10 +59,10 @@ public class SlimInfo extends SlimApk {
 		boolean outputAltNativeCode = false;
 		
 		if(meta.getMultiArch()) {
-			int index = list.indexOf(AndroidConstants.ABI_X86_64);
+			int index = list.indexOf(Const.ABI_X86_64);
 			
 			if (index < 0)
-				index = list.indexOf(AndroidConstants.ABI_ARMv8);
+				index = list.indexOf(Const.ABI_ARMv8);
 				
 			if (index >= 0) {	
 				log.i(str + list.get(index));

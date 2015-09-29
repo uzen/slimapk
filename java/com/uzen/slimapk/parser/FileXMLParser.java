@@ -11,7 +11,6 @@ import com.uzen.slimapk.struct.ApkMeta;
 import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.struct.resource.ResourceTable;
 import com.uzen.slimapk.struct.exception.ParserException;
-import com.uzen.slimapk.parser.*;
 import com.uzen.slimapk.utils.Utils;
 
 public class FileXMLParser {
@@ -53,12 +52,11 @@ public class FileXMLParser {
     
     private void parseResourceTable() throws IOException {
         Path entry = root.resolve(AndroidConstants.RESOURCE_FILE);
-        if (Files.notExists(entry)) {
-            this.resourceTable = new ResourceTable();
-            return;
-        }
-
+        
         this.resourceTable = new ResourceTable();
+        
+        if (Files.notExists(entry))
+            return;
 
         InputStream in = Files.newInputStream(entry);
         ByteBuffer buffer = ByteBuffer.wrap(Utils.toByteArray(in));

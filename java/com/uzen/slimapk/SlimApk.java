@@ -3,12 +3,15 @@ package com.uzen.slimapk;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
 
-import com.uzen.slimapk.parser.ApkFileVisitor;
 import com.uzen.slimapk.struct.ApkOptions;
+import com.uzen.slimapk.struct.AndroidConstants;
 import com.uzen.slimapk.struct.exception.Log;
 import com.uzen.slimapk.struct.ApkMeta;
 import com.uzen.slimapk.utils.Utils;
@@ -16,6 +19,7 @@ import com.uzen.slimapk.utils.Utils;
 public class SlimApk {
 	protected ApkOptions Options;
 	protected Path input, output;
+	protected static AndroidConstants Const;
 	
 	protected static Log log = new Log(SlimApk.class.getName());
 	
@@ -61,28 +65,52 @@ public class SlimApk {
 		}
 	}
 	
-	public static void deleteDirectory(Path dir) throws IOException {
-		ApkFileVisitor ApkLibDelParser = new ApkFileVisitor() {
+	protected void search(Path path) throws IOException {
+		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 			@Override
-			public void actionDir(Path dir) {
-				try {
-					Files.delete(dir);
-				} catch (IOException e) {
-					e.printStackTrace();
+			public FileVisitResult visitFile(Path file, BasicFileAttributes fileAttributes) {
+				if(file.toString().toLowerCase().endsWith(Const.EXTENSION)){
+					build(file);		
 				}
-			};
+				return FileVisitResult.CONTINUE;
+			}
+		});
+	}
+	
+	public void build(Path file){
+		return;
+	}
+	
+	public static void deleteDirectory(Path path) throws IOException {
+		if (Files.notExists(path)){
+			return;
+		}
+		
+		Files.walkFileTree(path, new SimpleFileVisitor<Path>(){
 			@Override
-			public void actionFile(Path file) {
+			public FileVisitResult visitFile(Path file, BasicFileAttributes fileAttributes) {
 				try {
 					Files.delete(file);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				return FileVisitResult.CONTINUE;
+			};
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+				try {
+					Files.delete(dir);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return FileVisitResult.CONTINUE;
 			}
-		};
-		if (Files.exists(dir)) {
-			Files.walkFileTree(dir, ApkLibDelParser);
-		}
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+				exc.printStackTrace();
+				return FileVisitResult.CONTINUE;
+			}
+		});
 	}
 
 	protected void writeFileList() throws IOException {
