@@ -42,7 +42,8 @@ public class LibraryFilter {
 		}
 	}
 	
-	public void extractAll(Path outdir, int size) {
+	public void extractAll(Path outdir) {
+		int size = architectures.size();
 		for(int i = 0; i < size; i++){
 			Path dir = LIB_DIR.resolve(architectures.get(i));
 			copy(dir, outdir.resolve(getArch(architectures.get(i))));

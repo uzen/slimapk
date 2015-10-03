@@ -103,7 +103,8 @@ public class SlimParser extends SlimApk {
 			int index = lib.parse(abi);
 			if(index >= 0) {
 				if(abi == null || hasMultiArch) {
-					lib.extractAll(outdir, index);
+					log.d("Extracting all libraries [{0}]", index);
+					lib.extractAll(outdir);
 				} else {
 					lib.extract(outdir, index);
 				}				
