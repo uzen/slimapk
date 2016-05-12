@@ -17,7 +17,7 @@ public class App {
 			return;
 		}
 		
-		Action action = new Action(Action.PARSER);
+		Action action = new Action(Action.INFO);
 		ApkOptions options = parseArgs(args, action);
 		if (input == null) {
 			return;
